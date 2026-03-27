@@ -17,7 +17,7 @@ function validateTrades(data: any): Trade[] {
 
   for (const item of data) {
     if (!isValidTrade(item)) {
-      throw new Error("Invalid trade object detected");
+      throw new Error(`Invalid trade object: ${JSON.stringify(item)}`);
     }
   }
 

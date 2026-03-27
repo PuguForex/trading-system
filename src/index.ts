@@ -1,24 +1,8 @@
 import { loadTrades } from "./services/TradeService";
 import { processTrades, calculateSummary } from "./services/TradeProcessor";
+import { printSummary } from "./utils/ReportPrinter";
 
-type Summary = {
-  totalTrades: number;
-  winRate: number;
-  totalProfit: number;
-  totalLoss: number;
-  net: number;
-};
-
-function printSummary(summary: Summary) {
-  console.log("----- Trading Summary -----");
-  console.log(`Total Trades : ${summary.totalTrades}`);
-  console.log(`Win Rate     : ${summary.winRate.toFixed(2)}%`);
-  console.log(`Total Profit : ${summary.totalProfit.toFixed(2)}`);
-  console.log(`Total Loss   : ${summary.totalLoss.toFixed(2)}`);
-  console.log(`Net Result   : ${summary.net.toFixed(2)}`);
-}
-
-async function main() {
+async function main(): Promise<void> {
   try {
     const filePath = process.argv[2] || "data/trades.json";
 

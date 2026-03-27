@@ -1,4 +1,5 @@
 import { Trade, TradeResult } from "../models/Trade";
+import { Summary } from "../models/Summary";
 
 export function processTrades(trades: Trade[]): TradeResult[] {
   return trades.map(trade => {
@@ -11,7 +12,7 @@ export function processTrades(trades: Trade[]): TradeResult[] {
   });
 }
 
-export function calculateSummary(results: TradeResult[]) {
+export function calculateSummary(results: TradeResult[]): Summary {
   let totalProfit = 0;
   let totalLoss = 0;
   let wins = 0;
