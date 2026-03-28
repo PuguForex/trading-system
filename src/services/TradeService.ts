@@ -1,18 +1,21 @@
-import { promises as fs } from "fs";
 import { Trade, TradeSchema } from "../models/Trade";
 import { z } from "zod";
 
 const TradesArraySchema = z.array(TradeSchema);
 
-export async function loadTrades(filePath: string): Promise<Trade[]> {
+export async function loadTrades(): Promise<Trade[]> {
   try {
-    const data = await fs.readFile(filePath, "utf-8");
+    const response = await fetch("http://localhost:3000/trades");
 
-    const parsed = JSON.parse(data);
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
 
-    return TradesArraySchema.parse(parsed);
+    const data = await response.json();
+
+    return TradesArraySchema.parse(data);
 
   } catch (error) {
-    throw new Error(`Failed to load trades: ${(error as Error).message}`);
+    throw new Error(`Failed to load trades from API: ${(error as Error).message}`);
   }
 }

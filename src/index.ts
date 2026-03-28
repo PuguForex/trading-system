@@ -4,12 +4,11 @@ import { printSummary } from "./utils/ReportPrinter";
 
 async function main(): Promise<void> {
   try {
-    const filePath = process.argv[2] || "data/trades.json";
-    const symbol = process.argv[3]; // NEW
+    const symbol = process.argv[2]; // now first arg is symbol
 
-    const trades = await loadTrades(filePath);
+    const trades = await loadTrades();
 
-    const filtered = filterTradesBySymbol(trades, symbol); // NEW
+    const filtered = filterTradesBySymbol(trades, symbol);
 
     if (filtered.length === 0) {
       console.log("No trades found for given symbol");
