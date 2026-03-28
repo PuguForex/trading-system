@@ -1,11 +1,43 @@
 import { Trade, TradeSchema } from "../models/Trade";
 import { z } from "zod";
 
+function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("Request timed out"));
+    }, timeoutMs);
+
+    fetch(url)
+      .then(res => {
+        clearTimeout(timeout);
+        resolve(res);
+      })
+      .catch(err => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+  });
+}
+
+async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+  let lastError: unknown;
+
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await fetchWithTimeout(url, 3000);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError;
+}
+
 const TradesArraySchema = z.array(TradeSchema);
 
 export async function loadTrades(): Promise<Trade[]> {
   try {
-    const response = await fetch("http://localhost:3000/trades");
+    const response = await fetchWithRetry("http://localhost:3000/trades");
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
@@ -16,6 +48,6 @@ export async function loadTrades(): Promise<Trade[]> {
     return TradesArraySchema.parse(data);
 
   } catch (error) {
-    throw new Error(`Failed to load trades from API: ${(error as Error).message}`);
+    throw new Error(`API load failed: ${(error as Error).message}`);
   }
 }
