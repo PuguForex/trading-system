@@ -1,4 +1,4 @@
-import { Trade, TradeSchema } from "../models/Trade";
+import { Trade, TradeSchema } from "shared-types";
 import { z } from "zod";
 
 function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
