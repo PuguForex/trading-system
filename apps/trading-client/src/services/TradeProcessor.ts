@@ -1,5 +1,5 @@
 import { Trade, TradeSchema } from "shared-types";
-import { TradeResult } from "../models/Trade";
+import { TradeResult } from "../models/TradeResult";
 import { Summary } from "../models/Summary";
 
 export function filterTradesBySymbol(
