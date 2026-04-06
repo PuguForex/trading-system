@@ -9,13 +9,14 @@ dotenv.config({
 
 // Schema validation
 const schema = z.object({
-  PORT: z.string().min(1)
+  PORT: z.string().min(1),
+  API_URL: z.url()
 });
 
 const parsed = schema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error("Invalid environment variables", parsed.error.format());
+  console.error("Invalid environment variables", z.treeifyError(parsed.error));
   throw new Error("Invalid environment variables");
 }
 

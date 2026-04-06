@@ -1,5 +1,6 @@
 import { Trade, TradeSchema } from "shared-types";
 import { z } from "zod";
+import { env } from "config";
 
 function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   return new Promise((resolve, reject) => {
@@ -37,7 +38,7 @@ const TradesArraySchema = z.array(TradeSchema);
 
 export async function loadTrades(): Promise<Trade[]> {
   try {
-    const response = await fetchWithRetry("http://localhost:3000/trades");
+    const response = await fetchWithRetry(`${env.API_URL}/trades`);
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
