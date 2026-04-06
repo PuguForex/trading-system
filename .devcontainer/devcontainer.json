@@ -1,0 +1,19 @@
+{
+  "name": "trading-system-dev",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+
+  "workspaceFolder": "/workspaces/trading-system",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+
+  "postCreateCommand": "npm install",
+
+  "remoteUser": "node"
+}
