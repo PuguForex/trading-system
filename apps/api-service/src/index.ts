@@ -1,6 +1,6 @@
 import express from "express";
 import { Trade } from "shared-types";
-import { env } from "./config/env";
+import { env } from "config";
 
 const app = express();
 const PORT = env.PORT;

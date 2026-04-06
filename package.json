@@ -9,13 +9,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm run build -w shared-types && npm run build -w trading-client && npm run build -w api-service",
+    "build": "npm run build -w config && npm run build -w shared-types && npm run build -w trading-client && npm run build -w api-service",
     "test": "npm run test -w trading-client",
     "start:api": "npm run start -w api-service",
-    "start:client": "npm run start -w trading-client"
+    "start:client": "npm run start -w trading-client",
+    "clean": "rimraf apps/*/dist packages/*/dist",
+    "build:all": "npm run build -w config && npm run build -w shared-types && npm run build -w api-service && npm run build -w trading-client",
+    "rebuild": "npm run clean && npm run build:all"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "devDependencies": {
+    "rimraf": "6.1.3"
+  }
 }

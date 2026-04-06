@@ -17,7 +17,6 @@
     "typescript": "6.0.2"
   },
   "dependencies": {
-    "dotenv": "17.4.1",
     "express": "5.2.1",
     "shared-types": "file:../../packages/shared-types"
   }
