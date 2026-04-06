@@ -3,6 +3,13 @@ import path from "path";
 import { z } from "zod";
 
 // Load root .env
+const envName = process.env.NODE_ENV || "development";
+
+dotenv.config({
+  path: path.resolve(__dirname, `../../../.env.${envName}`)
+});
+
+// fallback
 dotenv.config({
   path: path.resolve(__dirname, "../../../.env")
 });
