@@ -2,7 +2,8 @@ import { loadTrades } from "./services/TradeService";
 import { filterTradesBySymbol, processTrades, calculateSummary } from "./services/TradeProcessor";
 import { printSummary } from "./utils/ReportPrinter";
 
-const x: string = 123; // type error
+// const x: string = 123; // type error for CI/CD failure
+const x: string = "123";
 
 async function main(): Promise<void> {
   try {
