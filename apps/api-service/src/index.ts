@@ -1,8 +1,13 @@
 import express from "express";
 import { Trade } from "shared-types";
+import { env } from "./config/env";
 
 const app = express();
-const PORT = 3000;
+const PORT = env.PORT;
+
+if (!PORT) {
+  throw new Error("PORT is not defined in environment variables");
+}
 
 const trades: Trade[] = [
   { symbol: "EURUSD", entry: 1.1, exit: 1.2, volume: 1 },
