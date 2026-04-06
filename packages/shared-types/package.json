@@ -11,9 +11,9 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "typescript": "^6.0.2"
+    "typescript": "6.0.2"
   },
   "dependencies": {
-    "zod": "^4.3.6"
+    "zod": "4.3.6"
   }
 }
