@@ -1,4 +1,4 @@
-import { Trade, TradeSchema } from "shared-types";
+import { Trade/*, TradeSchema*/ } from "shared-types";
 import { TradeResult } from "../models/TradeResult";
 import { Summary } from "../models/Summary";
 

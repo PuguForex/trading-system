@@ -15,13 +15,19 @@
     "start:client": "npm run start -w trading-client",
     "clean": "rimraf apps/*/dist packages/*/dist",
     "build:all": "npm run build -w config && npm run build -w shared-types && npm run build -w api-service && npm run build -w trading-client",
-    "rebuild": "npm run clean && npm run build:all"
+    "rebuild": "npm run clean && npm run build:all",
+    "lint": "eslint . --ext .ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "rimraf": "6.1.3"
+    "@eslint/js": "10.0.1",
+    "@typescript-eslint/eslint-plugin": "8.58.0",
+    "@typescript-eslint/parser": "8.58.0",
+    "eslint": "10.2.0",
+    "rimraf": "6.1.3",
+    "typescript-eslint": "8.58.0"
   }
 }
