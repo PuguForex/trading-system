@@ -3,7 +3,7 @@ import { filterTradesBySymbol, processTrades, calculateSummary } from "./service
 import { printSummary } from "./utils/ReportPrinter";
 
 // const x: string = 123; // type error for CI/CD failure
-const x: string = "123";
+// const x: string = "123";
 
 async function main(): Promise<void> {
   try {

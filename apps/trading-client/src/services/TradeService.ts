@@ -49,6 +49,6 @@ export async function loadTrades(): Promise<Trade[]> {
     return TradesArraySchema.parse(data);
 
   } catch (error) {
-    throw new Error(`API load failed: ${(error as Error).message}`);
+    throw new Error(`API load failed: ${(error as Error).message}`, { cause: error });
   }
 }
