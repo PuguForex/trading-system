@@ -1,369 +1,240 @@
-# GitHub Actions CI/CD Workflow (Final Setup)
-
-## 🎯 Objective
-
-Establish a **secure, reliable, and professional CI/CD workflow** that:
-
-* Automatically builds and tests code
-* Prevents broken code from reaching `main`
-* Enforces a clean PR-based workflow
+# GitHub Actions CI/CD Workflow (Updated)
 
 ---
 
-# 🧠 Final Architecture
+# 🎯 Objective
+
+Maintain a **complete, enforced development pipeline** from local commit → CI → merge, ensuring:
+
+* Code quality
+* Security
+* Reliability
+
+---
+
+# 🧠 Updated Architecture (End-to-End)
 
 ```text
-Developer → Feature Branch → PR → CI (build + test) → Merge → main
+Developer → Pre-commit → PR → CI (Lint + Security + Build + Test) → Merge → main
 ```
 
 ---
 
-# 🧱 1. CI Workflow Configuration
+# 🧱 1. Local Safety Layer (NEW)
+
+## ✅ Pre-commit Hooks (Husky + lint-staged)
+
+### Purpose
+
+```text
+Catch issues BEFORE code is committed
+```
+
+---
+
+### Flow
+
+```text
+git commit → husky → lint-staged → eslint → allow/block commit
+```
+
+---
+
+### Behavior
+
+* Only runs on **staged files**
+* Blocks commit if lint fails
+* Provides instant feedback
+
+---
+
+### Key Config
+
+#### 📄 Root `package.json`
+
+```json
+"lint-staged": {
+  "**/*.ts": "eslint"
+}
+```
+
+---
+
+#### 📄 `.husky/pre-commit`
+
+```bash
+npx lint-staged
+```
+
+---
+
+# 🧱 2. CI Pipeline (GitHub Actions)
 
 ## 📄 File
 
-```
+```text
 .github/workflows/ci.yml
 ```
 
-## ✅ Final Version
+---
+
+## ✅ Final Pipeline Steps
 
 ```yaml
-name: CI Pipeline
+steps:
+  - name: Checkout repository
+    uses: actions/checkout@v4
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
+  - name: Setup Node.js
+    uses: actions/setup-node@v4
+    with:
+      node-version: 20
+      cache: 'npm'
 
-jobs:
-  build:
-    name: build-and-test
-    runs-on: ubuntu-latest
+  - name: Install dependencies
+    run: npm ci
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+  - name: Lint
+    run: npm run lint
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
+  - name: Security Audit
+    run: npm audit --production
 
-      - name: Install dependencies
-        run: npm ci
+  - name: Build project
+    run: npm run rebuild
 
-      - name: Build project
-        run: npm run rebuild
-
-      - name: Run tests
-        run: npm run test
+  - name: Run tests
+    run: npm run test
 ```
 
 ---
 
-## 🧠 Key Learnings
-
-* `jobs.build.name` is **required** for branch protection detection
-* `cache: 'npm'` improves CI speed
-* CI must run on **pull_request** for enforcement
-
----
-
-# 🧱 2. Branch Protection Rules
-
-## 📍 Location
-
-```
-GitHub → Settings → Branches → Add rule
-```
-
-## 🎯 Apply to:
-
-```
-main
-```
-
----
-
-## ✅ Required Settings
-
-### ✔️ Require a pull request before merging
-
-Prevents direct pushes to main
-
----
-
-### ✔️ Require status checks to pass before merging
-
-Select:
-
-```
-build-and-test
-```
-
----
-
-### ✔️ Require branches to be up to date before merging
-
-Ensures CI runs on latest code
-
----
-
-## ❌ Disabled (for solo dev)
-
-### Require approvals
-
-Reason:
-
-* Cannot approve your own PR
-* Causes workflow deadlock
-
----
-
-## ⚠️ Bypass Rules
-
-```
-Merge without waiting for requirements
-```
-
-* ❌ Do NOT use in normal workflow
-* ✅ Only for emergencies
-
----
-
-# 🧱 3. Correct Development Workflow
-
----
-
-## Step 1 — Sync main
-
-```bash
-git checkout main
-git pull origin main
-```
-
----
-
-## Step 2 — Create feature branch
-
-```bash
-git checkout -b feature/<name>
-```
-
----
-
-## Step 3 — Develop
-
-* Write code
-* Test locally
-
----
-
-## Step 4 — Commit
-
-```bash
-git add .
-git commit -m "Meaningful message"
-```
-
----
-
-## Step 5 — Push
-
-```bash
-git push -u origin feature/<name>
-```
-
----
-
-## Step 6 — Create Pull Request
-
-```
-feature/<name> → main
-```
-
----
-
-## Step 7 — CI Runs Automatically
-
-* ✅ Pass → proceed
-* ❌ Fail → fix → push again
-
----
-
-## Step 8 — Handle "Out-of-date" Branch
-
-If shown:
-
-### Option A (UI)
-
-```
-Update branch
-```
-
-### Option B (CLI)
-
-```bash
-git pull origin main
-git push
-```
-
----
-
-## Step 9 — Merge PR
+# 🧠 Pipeline Philosophy
 
 ```text
-Merge pull request
+Fail early → Fail fast → Prevent bad code from progressing
 ```
 
 ---
 
-## Step 10 — Cleanup
+# 🧱 3. Branch Workflow
 
-```bash
-git checkout main
-git pull origin main
-git branch -d feature/<name>
-git push origin --delete feature/<name>
+---
+
+## ✅ Standard Flow
+
+```text
+main → feature branch → PR → CI → merge → delete branch
 ```
 
 ---
 
-# 🧱 4. CI Behavior (Understanding)
+## Steps
+
+1. Sync main
+2. Create feature branch
+3. Develop
+4. Commit (pre-commit runs)
+5. Push
+6. Create PR
+7. CI runs
+8. Merge
+9. Delete branch (remote + local)
 
 ---
 
-## ✅ When CI Runs
-
-* On push to `main`
-* On every PR update
+# 🧱 4. Enforcement Layers (UPDATED)
 
 ---
 
-## ❌ Failure Case
+## 🟢 Layer 1 — Pre-commit (Local)
 
-* Build/test fails
-* Merge is blocked
-
----
-
-## ✅ Success Case
-
-* All checks pass
-* Merge allowed
+* Prevents bad commits
+* Fast feedback
 
 ---
 
-## ⚠️ Out-of-date Case
+## 🟢 Layer 2 — Lint (CI)
 
-* Branch must be updated
-* CI re-runs
-
----
-
-# 🧱 5. Debugging CI
-
-## 📍 Location
-
-```
-GitHub → Actions → Workflow → Job → Steps
-```
+* Code quality enforcement
 
 ---
 
-## 🧠 Debug Rule
+## 🟢 Layer 3 — Security Audit (CI)
 
-> Always check the FIRST failed step
-
----
-
-# 🧱 6. Common Mistakes (and Fixes)
+* Detects vulnerable dependencies
 
 ---
 
-## ❌ CI not appearing in branch rules
+## 🟢 Layer 4 — Build (CI)
 
-✔️ Fix:
-
-* Add `jobs.build.name`
-* Push changes to PR branch
+* Ensures project compiles
 
 ---
 
-## ❌ Commit not visible on GitHub
+## 🟢 Layer 5 — Tests (CI)
 
-✔️ Fix:
-
-* Ensure correct branch
-* Run `git push`
+* Ensures functionality
 
 ---
 
-## ❌ Cannot delete branch
+# 🧠 Final Flow (Complete)
 
-✔️ Fix:
-
-```bash
-git checkout main
-git branch -d <branch>
+```text
+Edit → Pre-commit → Push → PR → Lint → Security → Build → Test → Merge
 ```
 
 ---
 
-## ❌ No upstream branch
+# 🧠 Key Learnings
 
-✔️ Fix:
+---
 
-```bash
-git push -u origin <branch>
+## ✅ Local vs CI Responsibilities
+
+| Layer      | Responsibility        |
+| ---------- | --------------------- |
+| Pre-commit | Fast local validation |
+| CI         | Full validation       |
+
+---
+
+## ✅ Security Placement
+
+```text
+Local → minimal  
+CI → enforced
 ```
 
 ---
 
-# 🧱 7. Key Principles
+## ✅ Developer Experience
+
+* Errors caught early
+* Faster iteration
+* Cleaner commits
 
 ---
 
-## 🔐 Safety
+# 🎯 Current Status
 
-* Never push directly to `main`
-* Always use PR
-
----
-
-## 🧪 Reliability
-
-* CI must pass before merge
+```text
+Pre-commit hooks ✅
+CI pipeline ✅
+Security audit ✅
+Branch workflow ✅
+```
 
 ---
 
-## 🔄 Consistency
+# 🚀 Next Step
 
-* Always update branch before merge
-
----
-
-## ⚡ Efficiency
-
-* Use caching in CI
+👉 **Deployment (CD phase)**
 
 ---
 
 # 🧠 Final Insight
 
-> CI/CD is not just automation — it is a **quality enforcement system**
-
----
-
-# 🚀 Result
-
-You now have:
-
-* Automated validation ✅
-* Safe merge workflow ✅
-* Protected main branch ✅
-* Scalable development process ✅
+> CI/CD is not just automation — it is a **multi-layer enforcement system from local to remote**
 
 ---
