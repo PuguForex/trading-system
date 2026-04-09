@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Security Audit
+        run: npm audit --production
+
       - name: Build project
         run: npm run rebuild
 
