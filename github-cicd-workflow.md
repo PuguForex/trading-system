@@ -233,6 +233,48 @@ Branch workflow ✅
 
 ---
 
+# 🚀 Continuous Deployment (CD)
+
+---
+
+## 🎯 Overview
+
+After successful CI validation, code is deployed automatically.
+
+---
+
+## 🔁 Flow
+
+```text
+Push → CI (Lint + Security + Build + Test) → Merge → Auto Deploy (Render)
+```
+
+---
+
+## 🧠 Deployment Behavior
+
+* Trigger: push to `main`
+* Platform: Render
+* Auto-build + restart service
+
+---
+
+## 🧠 Integration with CI
+
+```text
+CI ensures only valid code reaches deployment
+```
+
+---
+
+## 🎯 Result
+
+```text
+Fully automated CI → CD pipeline ✅
+```
+
+---
+
 # 🧠 Final Insight
 
 > CI/CD is not just automation — it is a **multi-layer enforcement system from local to remote**
