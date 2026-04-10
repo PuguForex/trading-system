@@ -280,3 +280,35 @@ Fully automated CI → CD pipeline ✅
 > CI/CD is not just automation — it is a **multi-layer enforcement system from local to remote**
 
 ---
+
+# 🔐 Security Integration
+
+---
+
+## Overview
+
+Security is integrated into the CI/CD pipeline.
+
+---
+
+## Current Controls
+
+* ESLint enforcement
+* Dependency vulnerability scanning (`npm audit`)
+* Controlled merge workflow
+
+---
+
+## Deployment Safety
+
+Only validated code is deployed via CI → CD pipeline.
+
+---
+
+## Future Enhancements
+
+* Security scanning tools
+* Policy enforcement
+* Runtime security checks
+
+---

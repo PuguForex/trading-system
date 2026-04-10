@@ -84,3 +84,40 @@ Backend + Node client system ✅
 ```
 
 ---
+
+# 🔐 Security Layer
+
+---
+
+## Dev Environment Security
+
+The development environment runs inside a hardened Dev Container.
+
+Key protections:
+
+* Non-root execution
+* Restricted Linux capabilities
+* No privilege escalation
+* Limited file visibility
+
+---
+
+## AI Safety Model
+
+AI tools (Copilot, Claude, Codex, Cursor) are treated as untrusted agents.
+
+Controls:
+
+* No direct access to sensitive files
+* No automatic command execution
+* Human verification required
+
+---
+
+## Design Principle
+
+```text
+Contain AI → limit impact → prevent system damage
+```
+
+---
