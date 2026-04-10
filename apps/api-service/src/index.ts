@@ -10,7 +10,22 @@ if (!PORT) {
   throw new Error("PORT is not defined in environment variables");
 }
 
-app.use(cors()); // ✅ ADD THIS
+const allowedOrigins = [
+  "http://localhost:5173"
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like curl/postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error("Not allowed by CORS"));
+    }
+  }
+}));
 
 const trades: Trade[] = [
   { symbol: "EURUSD", entry: 1.1, exit: 1.2, volume: 1 },
