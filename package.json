@@ -18,9 +18,11 @@
     "rebuild": "npm run clean && npm run build:all",
     "lint": "eslint . --ext .ts",
     "prepare": "husky",
-    "dev:web": "npm run dev -w web-client"
+    "dev:web": "npm run dev -w web-client",
+    "build:web": "npm run build -w web-client",
+    "preview:web": "npm run preview -w web-client"
   },
-    "lint-staged": {
+  "lint-staged": {
     "**/*.ts": "eslint"
   },
   "keywords": [],
