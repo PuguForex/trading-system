@@ -6,14 +6,13 @@
 
   "customizations": {
     "vscode": {
-      "extensions": [
-        "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
-      ]
+      "extensions": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   },
 
   "postCreateCommand": "npm install",
 
-  "remoteUser": "node"
+  "remoteUser": "node",
+
+  "runArgs": ["--cap-drop=ALL", "--security-opt=no-new-privileges"]
 }

@@ -395,3 +395,105 @@ const PORT = env.PORT;
 
 > Environment variables are the most sensitive part of a system
 > and must be handled with strict discipline and structure.
+
+---
+
+# Security Workflow
+
+---
+
+# 🎯 Objective
+
+Establish a secure development environment for working with agentic AI tools.
+
+---
+
+# 🧠 Security Philosophy
+
+```text
+Assume AI is powerful but unsafe → design containment
+```
+
+---
+
+# 🧱 Layered Security Model
+
+```text
+Host (Windows)
+→ WSL
+→ Dev Container
+→ Application
+```
+
+---
+
+# 🔐 Phase 1 — Implemented Controls
+
+---
+
+## 1. Dev Container Hardening
+
+* Non-root user (`node`)
+* Dropped Linux capabilities
+* No privilege escalation
+
+```json
+"runArgs": [
+  "--cap-drop=ALL",
+  "--security-opt=no-new-privileges"
+]
+```
+
+---
+
+## 2. Secret Protection
+
+* `.env` excluded from Git
+* `.cursorignore` prevents AI indexing
+
+---
+
+## 3. AI Guardrails
+
+* Human-in-the-loop execution
+* No auto-execution of commands
+* Manual verification of:
+
+  * `curl`
+  * `wget`
+  * `npm install`
+  * `rm`
+
+---
+
+## 4. CI/CD Integration
+
+* Linting enforced
+* Dependency audit (`npm audit`)
+* Controlled merge → deployment flow
+
+---
+
+# ⚠️ Known Limitations
+
+* Network access not restricted yet
+* No runtime command sandboxing
+* AI tools not fully isolated
+
+---
+
+# 🚀 Future Enhancements
+
+* Network restrictions
+* Runtime sandboxing
+* Policy enforcement tools
+
+---
+
+# 🎯 Result
+
+```text
+AI operates within controlled, limited environment
+```
+
+---
