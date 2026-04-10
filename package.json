@@ -17,7 +17,8 @@
     "build:all": "npm run build -w config && npm run build -w shared-types && npm run build -w api-service && npm run build -w trading-client",
     "rebuild": "npm run clean && npm run build:all",
     "lint": "eslint . --ext .ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:web": "npm run dev -w web-client"
   },
     "lint-staged": {
     "**/*.ts": "eslint"
