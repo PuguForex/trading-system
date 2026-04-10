@@ -10,26 +10,26 @@ if (!PORT) {
   throw new Error("PORT is not defined in environment variables");
 }
 
-const allowedOrigins = [
-  "http://localhost:5173"
-];
+const allowedOrigins = ["http://localhost:5173", "https://puguforex.github.io"];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like curl/postman)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // allow requests with no origin (like curl/postman)
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("Not allowed by CORS"));
-    }
-  }
-}));
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS"));
+      }
+    },
+  }),
+);
 
 const trades: Trade[] = [
   { symbol: "EURUSD", entry: 1.1, exit: 1.2, volume: 1 },
-  { symbol: "GBPUSD", entry: 1.3, exit: 1.25, volume: 2 }
+  { symbol: "GBPUSD", entry: 1.3, exit: 1.25, volume: 2 },
 ];
 
 app.get("/trades", (req, res) => {
