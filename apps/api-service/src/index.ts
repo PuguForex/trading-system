@@ -1,3 +1,10 @@
+import { loadSecrets } from "config";
+
+loadSecrets("server-init");
+
+const apiKey = process.env.API_KEY;
+console.log("API Key loaded:", !!apiKey);
+
 import express from "express";
 import cors from "cors";
 import { Trade } from "shared-types";
@@ -10,7 +17,7 @@ if (!PORT) {
   throw new Error("PORT is not defined in environment variables");
 }
 
-const allowedOrigins = ["http://localhost:5173", "https://puguforex.github.io"];
+const allowedOrigins = env.ALLOWED_ORIGINS.split(",");
 
 app.use(
   cors({
