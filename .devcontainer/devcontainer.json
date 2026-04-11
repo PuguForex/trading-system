@@ -14,5 +14,10 @@
 
   "remoteUser": "node",
 
-  "runArgs": ["--cap-drop=ALL", "--security-opt=no-new-privileges"]
+  "runArgs": [
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--dns=8.8.8.8",
+    "--pids-limit=256"
+  ]
 }
