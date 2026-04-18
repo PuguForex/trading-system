@@ -1,4 +1,10 @@
-const API_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
+const rawUrl = import.meta.env.VITE_API_URL;
+
+if (!rawUrl) {
+  throw new Error("VITE_API_URL is not defined");
+}
+
+const API_URL = rawUrl.replace(/\/$/, "");
 
 console.log("API URL:", API_URL);
 
