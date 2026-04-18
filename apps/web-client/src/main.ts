@@ -1,5 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL.replace(/\/$/, "");
 
+console.log("API URL:", API_URL);
+
 async function loadTrades() {
   const app = document.querySelector<HTMLDivElement>('#app');
 

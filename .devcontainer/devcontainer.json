@@ -18,6 +18,6 @@
     "--cap-drop=ALL",
     "--security-opt=no-new-privileges",
     "--dns=8.8.8.8",
-    "--pids-limit=256"
+    "--pids-limit=1024"
   ]
 }

@@ -12,5 +12,8 @@ dist/
 Thumbs.db
 
 # Environment files
+# Env files
 .env
-.env.secrets
+.env.*
+apps/**/.env
+apps/**/.env.*
