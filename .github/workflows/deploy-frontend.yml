@@ -3,6 +3,12 @@ name: Deploy Frontend (GitHub Pages)
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - "apps/web-client/**"
+      - "packages/shared-types/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-frontend.yml"
 
 jobs:
   deploy-frontend:
