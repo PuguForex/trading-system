@@ -148,6 +148,11 @@ trading-system/
 └── AI_POLICY.md          → AI tool access rules
 ```
 
+### Monorepo Workflow Note
+After any schema/type change in `packages/shared-types`, always run `npm run build`
+inside `packages/shared-types` before consuming it in any app. The TypeScript
+compiler reads from `dist/`, not `src/`.
+
 ### 4.2 Dependency Graph
 
 ```
@@ -157,6 +162,11 @@ apps/trading-client  →  packages/config
 apps/trading-client  →  packages/shared-types
 apps/web-client      →  (standalone, Vite, uses VITE_API_URL)
 ```
+
+### Dependency Version Policy
+This project uses exact versions (no `^` or `~`) for all dependencies.
+This ensures reproducible builds and conscious, controlled upgrades.
+Future addition: Dependabot auto-PR configuration to prevent silent drift.
 
 > **CONSTRAINT:** Packages never depend on apps. Apps depend on packages. This direction must never be reversed.
 
@@ -394,17 +404,18 @@ permissions:
 
 ---
 
-## 8. Known Gaps (Pending Fixes)
+## 8. Known Gaps
 
 These are real issues identified by code review. They do not break the system but must be resolved.
 
-| # | Gap | File | Fix Required |
+| # | Gap | File | Status |
 |---|---|---|---|
-| 1 | `ALLOWED_OUTBOUND_HOSTS` declared in schema but never enforced | `packages/config/src/env.ts` | Implement actual network enforcement or document as future work |
-| 2 | `typescript` missing from `devDependencies` | `packages/config/package.json` | Add `typescript` and `@types/node` to devDependencies |
-| 3 | `.env.example` missing `ALLOWED_ORIGINS` | `.env.example` | Add all required fields to match Zod schema |
-| 4 | No Zod validation on API response | `apps/web-client/src/main.ts` | Add `TradesArraySchema.parse(data)` after `res.json()` |
-| 5 | `npm audit --production` in CI | `.github/workflows/ci.yml` | Remove `--production` flag |
+| 1 | `.env.example` missing `ALLOWED_ORIGINS` and other fields | `.env.example` | ✅ Fixed — branch `fix/known-gaps` |
+| 2 | `typescript` missing from `devDependencies` | `packages/config/package.json` | ✅ Fixed — branch `fix/known-gaps` |
+| 3 | `npm audit --production` flag in CI skips devDependency vulnerabilities | `.github/workflows/ci.yml` | ✅ Fixed — branch `fix/known-gaps` |
+| 4 | No Zod validation on API response in web client | `apps/web-client/src/main.ts` | ✅ Fixed — branch `fix/known-gaps` |
+| 5 | `ALLOWED_OUTBOUND_HOSTS` declared in schema but never enforced | `packages/config/src/env.ts` | ⏸️ Deferred — requires infrastructure-level enforcement (egress firewall / reverse proxy). Cannot be enforced at application layer alone. Revisit in hardening sprint. |
+| 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/` | 📋 Logged — fix after `fix/known-gaps` merges. Replace with `deploy-backend.yml` with path filters. |
 
 ---
 

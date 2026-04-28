@@ -1,3 +1,5 @@
+import { TradesArraySchema } from "shared-types";
+
 const rawUrl = import.meta.env.VITE_API_URL;
 
 if (!rawUrl) {
@@ -25,9 +27,11 @@ async function loadTrades() {
 
     const data = await res.json();
 
+    const trades = TradesArraySchema.parse(data);
+
     app.innerHTML = `
       <h1>Trades</h1>
-      <pre>${JSON.stringify(data, null, 2)}</pre>
+      <pre>${JSON.stringify(trades, null, 2)}</pre>
     `;
   } catch (err) {
     app.innerHTML = `<p style="color:red;">Error loading trades</p>`;

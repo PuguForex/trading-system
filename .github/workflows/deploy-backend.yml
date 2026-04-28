@@ -1,0 +1,21 @@
+name: Deploy Backend (Render)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "apps/api-service/**"
+      - "packages/config/**"
+      - "packages/shared-types/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-backend.yml"
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl --fail --silent --show-error -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
