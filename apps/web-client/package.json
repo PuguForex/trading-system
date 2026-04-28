@@ -6,13 +6,13 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
-    "preview": "vite preview --host",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "preview": "vite preview --host"
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0",
     "typescript": "~6.0.2",
     "vite": "^8.0.4"
+  },
+  "dependencies": {
+    "shared-types": "file:../../packages/shared-types"
   }
 }
