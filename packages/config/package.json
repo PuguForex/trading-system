@@ -12,7 +12,7 @@
   "description": "",
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "typescript": "6.0.2"
+    "typescript": "6.0.3"
   },
   "dependencies": {
     "dotenv": "17.4.2",
