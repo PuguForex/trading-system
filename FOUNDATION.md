@@ -187,13 +187,13 @@ Future addition: Dependabot auto-PR configuration to prevent silent drift.
 **`apps/web-client`**
 - Vite browser app — fetches `GET /trades` from `VITE_API_URL`
 - Renders trade data to DOM
-- ⚠️ **KNOWN GAP:** No Zod validation on API response (see Section 8)
+- Validates API response at runtime using Zod (`TradesArraySchema.parse`)
 
 **`packages/config`**
 - Loads `.env.{NODE_ENV}` → fallback `.env` → validates with Zod schema
 - Exports validated `env` object: `PORT`, `API_URL`, `ALLOWED_ORIGINS`, optional `API_KEY`
 - `loadSecrets(context)` — context-gated secrets loader (see Section 5.3)
-- ⚠️ **KNOWN GAP:** `typescript` missing from `devDependencies` (see Section 8)
+- `typescript` and `@types/node` present in `devDependencies`
 
 **`packages/shared-types`**
 - Single source of truth for the `Trade` type
@@ -388,7 +388,36 @@ Steps:
 3. Deploy dist/ to GitHub Pages via peaceiris/actions-gh-pages@v4
 ```
 
-### 7.3 GitHub Actions IAM
+> **CONSTRAINT:** `shared-types` must be built before `build:web`. Any workflow
+> consuming `shared-types` must explicitly run `npm run build -w packages/shared-types`
+> first — the TypeScript compiler reads from `dist/`, not `src/`.
+
+### 7.3 Backend Deployment (`deploy-backend.yml`)
+
+Triggers: push to `main` **only when** these paths change:
+- `apps/api-service/**`
+- `packages/config/**`
+- `packages/shared-types/**`
+- `package.json` / `package-lock.json`
+- `.github/workflows/deploy-backend.yml`
+
+```
+Steps:
+
+Trigger Render deploy via webhook
+curl --fail --silent --show-error -X POST $RENDER_DEPLOY_HOOK_URL
+```
+
+**Design decisions:**
+- Render auto-deploy is **disabled** — GitHub Actions is the sole trigger
+- `--silent` prevents the hook URL from appearing in logs
+- `--fail` causes the step to fail on non-2xx response — broken deploys are visible in CI
+- No `contents: write` permission needed — least privilege principle
+
+> **CONSTRAINT:** Never re-enable Render auto-deploy. All deploys must be triggered
+> from GitHub Actions to maintain path filtering and audit trail.
+
+### 7.4 GitHub Actions IAM
 
 > **CONSTRAINT:** Every workflow must declare explicit `permissions`. No workflow runs with default wide permissions.
 
@@ -415,7 +444,7 @@ These are real issues identified by code review. They do not break the system bu
 | 3 | `npm audit --production` flag in CI skips devDependency vulnerabilities | `.github/workflows/ci.yml` | ✅ Fixed — branch `fix/known-gaps` |
 | 4 | No Zod validation on API response in web client | `apps/web-client/src/main.ts` | ✅ Fixed — branch `fix/known-gaps` |
 | 5 | `ALLOWED_OUTBOUND_HOSTS` declared in schema but never enforced | `packages/config/src/env.ts` | ⏸️ Deferred — requires infrastructure-level enforcement (egress firewall / reverse proxy). Cannot be enforced at application layer alone. Revisit in hardening sprint. |
-| 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/` | 📋 Logged — fix after `fix/known-gaps` merges. Replace with `deploy-backend.yml` with path filters. |
+| 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/deploy-backend.yml` | ✅ Fixed — `deploy-backend.yml` created with path filters. Render auto-deploy disabled. |
 
 ---
 
@@ -435,12 +464,18 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Env separation (dev / production / ci / secrets)
 ✔ Path-filtered deployments (frontend only redeploys on relevant changes)
 ✔ Type-safe shared contracts (shared-types package)
+✔ Path-filtered backend deployment (deploy-backend.yml, Render webhook)
+✔ PostCSS patched to 8.5.10+ (XSS vulnerability via unescaped </style>)
 ```
 
 ### 9.2 Next — High Impact, Low Effort
 
 ```
-→ Fix 5 known gaps (Section 8)
+→ Dependabot configuration (automated dependency update PRs)
+→ Rate limiting on API endpoints
+→ Helmet.js HTTP security headers
+→ Auth enforcement on API endpoints
+→ Structured logging with pino
 → GitHub Actions explicit permissions (IAM) — 5 minutes
 → Pin GitHub Actions to commit SHA (supply chain security) — 10 minutes
 → Phase 4: Safe AI Usage Setup (VS Code AI extension + rules + prompt discipline)
@@ -547,5 +582,5 @@ The next project will:
 
 ---
 
-*Last updated: April 2026*
-*Maintained by: Navdeep Singh*
+*Last updated: April 2026 — post fix/known-gaps branch*
+*Maintained by: PuguDev*
