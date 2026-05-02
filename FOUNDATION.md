@@ -910,6 +910,8 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Exact dependency versions enforced across full monorepo — .npmrc save-exact=true
 ✔ @types/node corrected from 20.0.0 → 20.19.39 (compatible with TypeScript 6)
 ✔ Helmet.js HTTP security headers added to API (helmet 8.1.0)
+✔ SESSION.md created — AI session bookmark for context re-entry
+✔ AI_POLICY.md updated — Context Loss Protocol added
 ```
 
 
@@ -919,6 +921,7 @@ These are real issues identified by code review. They do not break the system bu
 ```
 → Rate limiting on API endpoints (express-rate-limit)
 → Helmet.js HTTP security headers
+✔ SESSION.md + AI_POLICY.md Context Loss Protocol
 → Auth enforcement on API endpoints
 → Structured logging with pino
 → Pin GitHub Actions to commit SHA (supply chain security)
