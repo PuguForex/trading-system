@@ -673,6 +673,48 @@ Both remote AND local branch cleanup are required after every merge.
 Stale branches create confusion and clutter the branch list.
 
 
+### 7.8 GitHub Security & Analysis Settings
+
+Location: GitHub → repo → Settings → Security & Analysis
+
+#### Current State
+
+| Feature | Status | Notes |
+|---|---|---|
+| Security advisories | ✅ Enabled (GitHub default) | View/disclose advisories |
+| Secret scanning alerts | ✅ Enabled (GitHub default) | GitHub auto-enabled for all public repos (Feb 2024) |
+| Push protection | ✅ Enabled (GitHub default) | Blocks pushes containing secrets before they land |
+| Dependency graph | ✅ Enabled | Required foundation for Dependabot alerts |
+| Dependabot alerts | ✅ Enabled | Alerts on vulnerable dependencies via GitHub Advisory Database |
+| Dependabot malware alerts | ✅ Enabled | Alerts if an installed package is later flagged as malware |
+| Dependabot version updates | ✅ Handled via `dependabot.yml` | See Section 7.6 |
+| Code scanning (CodeQL) | ⏳ Pending | Next item — requires workflow file |
+| Security policy | ⏸️ Skipped | Optional — relevant for team/public contributor projects |
+| Private vulnerability reporting | ⏸️ Skipped | Not needed for solo project |
+| Dependabot security updates (UI) | ⏸️ Disabled intentionally | Would create uncoordinated PRs outside `dependabot.yml` control |
+| Grouped security updates (UI) | ⏸️ Disabled intentionally | Only relevant if UI security updates were enabled |
+| Automatic dependency submission | ⏸️ Skipped | Build-time deps (Maven, Gradle) — not relevant for npm |
+
+#### Key Decisions
+
+**Why "Dependabot security updates" UI toggle is disabled:**
+The `dependabot.yml` file already manages all update PRs in a controlled,
+reviewed, CI-gated flow. Enabling the UI toggle creates a second, parallel
+PR stream outside that configuration. The two would conflict and duplicate.
+The `dependabot.yml` approach is more explicit and auditable — it wins.
+
+**Why secret scanning and push protection were already on:**
+GitHub enabled these by default for all free public repositories in February 2024.
+They required no action. Push protection is the most important of the two — it
+blocks a push before the secret ever lands in the repo.
+
+**Why malware alerts matter:**
+Dependabot malware alerts fire if a package already installed in your repo is
+later identified as malware — this is exactly the Axios supply chain attack
+pattern (March 2026). Standard Dependabot alerts cover CVEs; malware alerts
+cover the active compromise scenario.
+
+
 ---
 
 
@@ -723,6 +765,7 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Frontend deploy pipeline migrated from peaceiris/actions-gh-pages to official
   actions/upload-pages-artifact@v3 + actions/deploy-pages@v4
 ✔ gh-pages branch eliminated — frontend deploys via GitHub Actions API, not branch
+✔ GitHub Security & Analysis configured — see Section 7.8
 ✔ deploy-frontend.yml permissions narrowed from contents:write to pages:write + id-token:write
 ```
 
@@ -868,6 +911,16 @@ The result: no surprise installs, no stale dependencies, no silent drift.
 **Constraint:** Never reintroduce `^` or `~` version prefixes. All version updates
 must come through Dependabot PRs with CI validation.
 
+
+### Why the Dependabot Security Updates UI Toggle Is Disabled
+
+**Decision:** Leave "Dependabot security updates" UI toggle disabled in
+GitHub Settings → Security & Analysis.
+**Reason:** `dependabot.yml` already handles all PRs in a controlled, reviewed,
+CI-gated flow. The UI toggle creates automatic PRs outside that flow —
+duplicating effort and potentially conflicting with `dependabot.yml` group rules.
+Explicit configuration in `dependabot.yml` always wins over UI toggles.
+**Constraint:** If `dependabot.yml` is ever removed, re-evaluate this toggle.
 
 ---
 
