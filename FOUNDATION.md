@@ -817,6 +817,7 @@ These are real issues identified by code review. They do not break the system bu
 ✔ GitHub Security & Analysis configured — see Section 7.8
 ✔ CodeQL static analysis configured (javascript-typescript + actions) — see Section 7.9
 ✔ deploy-frontend.yml permissions narrowed from contents:write to pages:write + id-token:write
+✔ Explicit permissions added to all workflows — CodeQL alerts #1 #2 #3 resolved (CWE-275)
 ```
 
 
@@ -983,6 +984,19 @@ workflow-based (6 workflow files), scanning the workflows themselves is as
 important as scanning the application code.
 **Constraint:** Both matrix entries must be kept. Removing `actions` would leave
 our CI/CD pipeline unanalysed.
+
+
+### Why All Workflows Have Explicit Top-Level Permissions
+
+**Decision:** Add `permissions: contents: read` at workflow level to all workflows.
+**Reason:** Without explicit permissions, GitHub Actions falls back to default wide
+permissions which can include `contents: write`. CodeQL (actions scanner) flagged
+this as CWE-275 on `ci.yml`, `deploy-backend.yml`, and `deploy-frontend.yml`.
+**Rule:** Workflow level sets the safe minimum default. Job level overrides upward
+only when a specific job genuinely needs elevated access (`deploy-frontend.yml`
+deploy job: `pages: write` + `id-token: write`).
+**Constraint:** Every new workflow must declare explicit permissions from the first commit.
+This is now enforced by CodeQL — violations will appear as Medium alerts.
 
 
 ---
