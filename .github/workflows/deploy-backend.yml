@@ -11,6 +11,9 @@ on:
       - "package-lock.json"
       - ".github/workflows/deploy-backend.yml"
 
+permissions:          # ← ADD THIS BLOCK
+  contents: read      # ← curl webhook only — no repo write needed
+
 jobs:
   deploy-backend:
     runs-on: ubuntu-latest

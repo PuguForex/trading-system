@@ -10,8 +10,11 @@ on:
       - "package-lock.json"
       - ".github/workflows/deploy-frontend.yml"
 
+permissions:          # ← ADD THIS BLOCK (safe default for build job)
+  contents: read
+
 jobs:
-  build:
+  build:              # ← inherits contents: read from above
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
