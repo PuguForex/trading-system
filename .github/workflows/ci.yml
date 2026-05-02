@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   pull_request:
 
+permissions:          # ← ADD THIS BLOCK
+  contents: read      # ← read source code only — nothing else
+
 jobs:
   build:
     name: build-and-test
