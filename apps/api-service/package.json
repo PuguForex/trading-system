@@ -13,13 +13,14 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@types/cors": "^2.8.19",
+    "@types/cors": "2.8.19",
     "@types/express": "5.0.6",
     "typescript": "6.0.3"
   },
   "dependencies": {
-    "cors": "^2.8.6",
+    "cors": "2.8.6",
     "express": "5.2.1",
+    "express-rate-limit": "8.4.1",
     "shared-types": "file:../../packages/shared-types"
   }
 }
