@@ -10,18 +10,18 @@ on:
       - "package-lock.json"
       - ".github/workflows/deploy-frontend.yml"
 
-permissions:          # ← ADD THIS BLOCK (safe default for build job)
+permissions:
   contents: read
 
 jobs:
-  build:              # ← inherits contents: read from above
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 20
           cache: 'npm'
@@ -38,7 +38,7 @@ jobs:
           VITE_API_URL: ${{ vars.VITE_API_URL }}
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: ./apps/web-client/dist
 
@@ -54,4 +54,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4
