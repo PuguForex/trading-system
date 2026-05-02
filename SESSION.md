@@ -8,8 +8,8 @@
 ## Current Position
 
 - **Phase:** Section 9.2 — High Impact, Low Effort Security
-- **Last completed:** Helmet.js HTTP security headers (helmet 8.1.0) ✅
-- **Currently working on:** pino structured logging → then auth enforcement → then pin GitHub Actions to commit SHA
+- **Last completed:** SESSION.md + AI_POLICY.md Context Loss Protocol ✅
+- **Currently working on:** pino structured logging
 
 ---
 
@@ -40,7 +40,7 @@
 
 ## Key Constraints (Quick Reference)
 
-- Exact dependency versions only — no `^` or `~`
+- Exact dependency versions only — no `^` or ~`
 - Middleware order: `helmet()` → `cors()` → `limiter` → routes
 - Never touch `.env.secrets`
 - Always sync `FOUNDATION.md` after every architectural change
