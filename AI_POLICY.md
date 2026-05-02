@@ -27,3 +27,12 @@
 
 - Prefer minimal, explicit, and safe changes
 - Respect existing architecture and security design
+
+## 🔄 Context Loss Protocol
+
+- Never infer current project state from training data
+- If context is unclear, explicitly state it — do not guess
+- Always request SESSION.md first as the re-entry point
+- Then request FOUNDATION.md for full architecture context
+- Never proceed with architectural changes without reading FOUNDATION.md
+- If SESSION.md and FOUNDATION.md conflict, FOUNDATION.md wins
