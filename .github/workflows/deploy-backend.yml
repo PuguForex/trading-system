@@ -10,6 +10,7 @@ on:
       - "package.json"
       - "package-lock.json"
       - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:    
 
 permissions:          # ← ADD THIS BLOCK
   contents: read      # ← curl webhook only — no repo write needed
