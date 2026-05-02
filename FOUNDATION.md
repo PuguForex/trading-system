@@ -928,6 +928,7 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Structured logging with pino — request/response logging, header redaction,
   4xx=warn, 5xx=error, trust proxy for Render load balancer
 ✔ `workflow_dispatch` added to deploy-backend.yml — manual deploy escape hatch
+✔ GitHub Actions pinned to commit SHA (supply chain attack prevention)
 ```
 
 
@@ -936,7 +937,6 @@ These are real issues identified by code review. They do not break the system bu
 
 ```
 → Auth enforcement on API endpoints
-→ Pin GitHub Actions to commit SHA (supply chain security)
 → Phase 4: Safe AI Usage Setup (VS Code AI extension + rules + prompt discipline)
 ```
 
@@ -1204,6 +1204,22 @@ complexity. Revisit during the hardening sprint.
 
 **Constraint:** Never set `NODE_ENV` in the Render dashboard. Never use
 `--include=dev` as a permanent fix.
+
+
+### Why GitHub Actions Are Pinned to Commit SHA
+
+**Decision:** All `uses:` references in workflow files use full commit SHAs
+instead of mutable version tags.
+**Reason:** Version tags like `@v6` are mutable — a compromised maintainer
+account or supply chain attack can silently retarget the tag to malicious code.
+Your CI runs with `contents: read` access to the entire repo on every push.
+A pinned SHA is immutable — the exact code reviewed is the exact code that runs.
+This is the tj-actions/changed-files attack (March 2025) defense pattern.
+**How pins are maintained:** Dependabot is already configured for the
+`github-actions` ecosystem — it automatically opens PRs when a pinned SHA
+has a newer version available. No manual SHA tracking required.
+**Constraint:** Every new workflow `uses:` reference must be pinned to a
+commit SHA on the first commit. Never merge a workflow using a tag reference.
 
 
 ---
