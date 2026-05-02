@@ -2,17 +2,21 @@ import { loadSecrets } from "config";
 
 loadSecrets("server-init");
 
-const apiKey = process.env.API_KEY;
-console.log("API Key loaded:", !!apiKey);
-
+import pino from "pino";
+import pinoHttp from "pino-http";
 import express from "express";
 import cors from "cors";
-import rateLimit from "express-rate-limit"; // ← ADD
-import helmet from "helmet"; // ← ADD
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { Trade } from "shared-types";
 import { env } from "config";
 
+const logger = pino({
+  level: env.NODE_ENV === "production" ? "info" : "debug",
+});
+
 const app = express();
+app.set("trust proxy", 1); // ← ADD: trust Render's load balancer
 const PORT = env.PORT;
 
 if (!PORT) {
@@ -21,7 +25,37 @@ if (!PORT) {
 
 const allowedOrigins = env.ALLOWED_ORIGINS.split(",");
 
-app.use(helmet()); // ← ADD (before cors and limiter)
+app.use(helmet());
+
+app.use(
+  pinoHttp({
+    logger,
+    redact: {
+      paths: [
+        "req.headers.authorization",
+        "req.headers.cookie",
+        "req.headers['x-api-key']",
+        "req.headers['x-auth-token']",
+      ],
+      censor: "[REDACTED]",
+    },
+    customLogLevel: (req, res, err) => {
+      if (err || res.statusCode >= 500) return "error";
+      if (res.statusCode >= 400) return "warn";
+      return "info";
+    },
+    serializers: {
+      req: (req) => ({
+        method: req.method,
+        url: req.url,
+        userAgent: req.headers["user-agent"],
+      }),
+      res: (req) => ({
+        statusCode: req.statusCode,
+      }),
+    },
+  }),
+);
 
 app.use(
   cors({
@@ -36,17 +70,15 @@ app.use(
   }),
 );
 
-// Rate limiting — applied globally before all routes        // ← ADD
 const limiter = rateLimit({
-  // ← ADD
-  windowMs: 15 * 60 * 1000, // 15 minutes                  // ← ADD
-  limit: 100, // max 100 requests per window // ← ADD
-  standardHeaders: "draft-8", // RateLimit headers (RFC)     // ← ADD
-  legacyHeaders: false, // disable X-RateLimit-*       // ← ADD
-  message: { error: "Too many requests, please try again later." }, // ← ADD
-}); // ← ADD
-// ← ADD
-app.use(limiter); // ← ADD
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: { error: "Too many requests, please try again later." },
+});
+
+app.use(limiter);
 
 const trades: Trade[] = [
   { symbol: "EURUSD", entry: 1.1, exit: 1.2, volume: 1 },
@@ -58,5 +90,5 @@ app.get("/trades", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`API running on http://localhost:${PORT}`);
+  logger.info({ port: PORT }, "API server started");
 });
