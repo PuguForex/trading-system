@@ -8,6 +8,7 @@ console.log("API Key loaded:", !!apiKey);
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit"; // ← ADD
+import helmet from "helmet"; // ← ADD
 import { Trade } from "shared-types";
 import { env } from "config";
 
@@ -19,6 +20,8 @@ if (!PORT) {
 }
 
 const allowedOrigins = env.ALLOWED_ORIGINS.split(",");
+
+app.use(helmet()); // ← ADD (before cors and limiter)
 
 app.use(
   cors({
