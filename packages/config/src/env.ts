@@ -20,7 +20,7 @@ export function loadSecrets(context?: string) {
   }
 
   dotenv.config({
-    path: path.resolve(__dirname, "../../../.env.secrets")
+    path: path.resolve(__dirname, "../../../.env.secrets"),
   });
 
   secretsLoaded = true;
@@ -30,12 +30,12 @@ export function loadSecrets(context?: string) {
 const envName = process.env.NODE_ENV || "development";
 
 dotenv.config({
-  path: path.resolve(__dirname, `../../../.env.${envName}`)
+  path: path.resolve(__dirname, `../../../.env.${envName}`),
 });
 
 // fallback
 dotenv.config({
-  path: path.resolve(__dirname, "../../../.env")
+  path: path.resolve(__dirname, "../../../.env"),
 });
 
 // Schema validation
@@ -43,8 +43,12 @@ const schema = z.object({
   PORT: z.string().min(1),
   API_URL: z.url(),
   ALLOWED_ORIGINS: z.string().min(1),
+  // TODO: enforce outbound filtering middleware using this value (Phase 8 - Network Security)
   ALLOWED_OUTBOUND_HOSTS: z.string().min(1).optional(),
-  API_KEY: z.string().min(1).optional()
+  API_KEY: z.string().min(1).optional(),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"), // ← ADD
 });
 
 const parsed = schema.safeParse(process.env);
@@ -54,4 +58,4 @@ if (!parsed.success) {
   throw new Error("Invalid environment variables");
 }
 
-export const env = parsed.data;
+export const env = parsed.data!; // ← non-null assertion
