@@ -673,6 +673,26 @@ git branch -d feature/your-branch-name              # local delete
 Both remote AND local branch cleanup are required after every merge.
 Stale branches create confusion and clutter the branch list.
 
+### When to Use `git commit --amend` + `--force-with-lease`
+
+**Use case:** A fix belongs to the same logical unit as the previous commit
+on a feature branch — not a separate concern.
+
+```bash
+# Fix belongs to previous commit (e.g. correcting a version pin)
+git add <fixed-file>
+git commit --amend --no-edit          # rewrites last commit in place
+git push origin <branch> --force-with-lease  # safe overwrite
+
+# Never use bare --force
+# Never amend commits that have already been merged to main
+```
+
+**Why `--force-with-lease` over `--force`:**
+`--force-with-lease` only overwrites the remote if no one else has pushed
+since your last pull. On a solo branch it behaves identically to `--force`
+but the habit is correct for any collaborative environment.
+
 
 ### 7.8 GitHub Security & Analysis Settings
 
@@ -764,6 +784,37 @@ GitHub → repo → Security → Code scanning alerts
 > check the Security tab after each merge.
 
 
+### 7.10 Rate Limiting (`apps/api-service`)
+
+Package: `express-rate-limit 7.5.0`
+Applied: globally in `apps/api-service/src/index.ts` — before all routes
+
+```typescript
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  limit: 100,                 // max 100 requests per window per IP
+  standardHeaders: "draft-8", // RFC-compliant RateLimit headers
+  legacyHeaders: false,       // X-RateLimit-* headers disabled
+  message: { error: "Too many requests, please try again later." },
+});
+
+app.use(limiter);             // global — protects all endpoints
+```
+
+**Why global placement (before routes):**
+Every current and future endpoint is automatically protected.
+No route can be accidentally left unguarded.
+
+**Why `standardHeaders: "draft-8"`:**
+Sends RFC-compliant `RateLimit` headers so clients know exactly
+when their window resets. Industry standard — non-standard
+`X-RateLimit-*` headers disabled.
+
+**Why 100 requests / 15 minutes:**
+Generous enough for legitimate use. Blocks hammering and
+enumeration attacks. Revisit when real traffic patterns are known.
+
+
 ---
 
 
@@ -781,6 +832,8 @@ These are real issues identified by code review. They do not break the system bu
 | 4 | No Zod validation on API response in web client | `apps/web-client/src/main.ts` | ✅ Fixed — branch `fix/known-gaps` |
 | 5 | `ALLOWED_OUTBOUND_HOSTS` declared in schema but never enforced | `packages/config/src/env.ts` | ⏸️ Deferred — requires infrastructure-level enforcement (egress firewall / reverse proxy). Cannot be enforced at application layer alone. Revisit in hardening sprint. |
 | 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/deploy-backend.yml` | ✅ Fixed — `deploy-backend.yml` created with path filters. Render auto-deploy disabled. |
+| 7 | `@types/node` pinned to `20.0.0` — incompatible with TypeScript 6 | `packages/config/package.json` | ✅ Fixed — updated to `20.19.39` on branch `feature/rate-limiting` |
+| 8 | `^` and `~` present in multiple `package.json` files across monorepo | `apps/api-service`, `apps/web-client`, `packages/config` | ✅ Fixed — all versions pinned exactly, `.npmrc` added with `save-exact=true` |
 
 
 ---
@@ -818,6 +871,9 @@ These are real issues identified by code review. They do not break the system bu
 ✔ CodeQL static analysis configured (javascript-typescript + actions) — see Section 7.9
 ✔ deploy-frontend.yml permissions narrowed from contents:write to pages:write + id-token:write
 ✔ Explicit permissions added to all workflows — CodeQL alerts #1 #2 #3 resolved (CWE-275)
+✔ Rate limiting added to API (express-rate-limit 7.5.0 — 100 req / 15 min global)
+✔ Exact dependency versions enforced across full monorepo — .npmrc save-exact=true
+✔ @types/node corrected from 20.0.0 → 20.19.39 (compatible with TypeScript 6)
 ```
 
 
@@ -997,6 +1053,53 @@ only when a specific job genuinely needs elevated access (`deploy-frontend.yml`
 deploy job: `pages: write` + `id-token: write`).
 **Constraint:** Every new workflow must declare explicit permissions from the first commit.
 This is now enforced by CodeQL — violations will appear as Medium alerts.
+
+
+### Why `.npmrc` `save-exact=true` Is a Project Constraint
+
+**Decision:** Add `.npmrc` with `save-exact=true` at monorepo root.
+**Reason:** `npm install` adds `^` by default. This silently violated the
+exact versions policy on every new package install. `.npmrc` makes
+exact pinning automatic — no manual removal of `^` required.
+**Constraint:** `.npmrc` must never be removed or overridden.
+**Lesson learned:** After any dependency version change, always run
+`npm ci` locally before committing — not `npm install`. `npm ci` deletes
+`node_modules` and installs from `package-lock.json` exactly, replicating
+CI conditions. `npm install` uses cached `node_modules` and can mask
+incompatibilities that only surface in CI.
+
+### Why `@types/node` Must Never Be Pinned to `x.0.0`
+
+**Decision:** Pin `@types/node` to `20.19.39` (latest stable `20.x` patch).
+**Reason:** `@types/node@20.0.0` is the day-one release of that major version.
+It predates many TypeScript compatibility fixes. Pinning to it caused
+TypeScript 6 compilation errors in `packages/config` — the only package
+that declares `@types/node` as a direct dependency.
+**Rule:** Always pin `@types/node` to the latest patch of the intended major
+(`npm show @types/node@20 version` to check). Dependabot handles future
+patch updates within `20.x` automatically.
+**Constraint:** Never pin any `@types/*` package to its `.0.0` release.
+
+### Why CodeQL Is Not a Merge Gate
+
+**Decision:** CodeQL runs post-merge, results post to Security tab.
+It is not added to branch protection required status checks.
+**Reason:** CodeQL findings require human review before action — they are
+not binary pass/fail like a build or test. Adding it as a hard gate
+adds 8-10 minutes to every PR for informational output.
+**Revisit when:** API handles real traffic or sensitive data. Adding CodeQL
+to branch protection is a one-minute change in Settings → Branches.
+
+### Why `npm ci` in CI, `npm ci` Locally After Dependency Changes
+
+**Decision:** CI always uses `npm ci`. Locally, use `npm ci` after any
+dependency version change before committing.
+**Reason:** `npm install` reuses existing `node_modules` — it can mask
+incompatibilities that only surface on a clean install. `npm ci` deletes
+`node_modules` and installs exactly from `package-lock.json`, replicating
+CI conditions precisely.
+**Rule:** `npm install` → for adding new packages. `npm ci` → for
+verifying the build is clean before committing.
 
 
 ---
