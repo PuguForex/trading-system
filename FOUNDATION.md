@@ -815,6 +815,41 @@ Generous enough for legitimate use. Blocks hammering and
 enumeration attacks. Revisit when real traffic patterns are known.
 
 
+### 7.11 Helmet.js HTTP Security Headers (`apps/api-service`)
+
+Package: `helmet 8.1.0`
+Applied: globally in `apps/api-service/src/index.ts` — before `cors()` and `limiter`
+
+```typescript
+app.use(helmet());   // must be first — sets headers on every response
+app.use(cors(...));
+app.use(limiter);
+```
+
+**Middleware order (non-negotiable):**
+helmet() → sets security headers on every response including error responses
+cors() → applies origin policy
+limiter → applies rate limiting
+routes → business logic
+
+
+**Headers set by `helmet()` defaults:**
+
+| Header | Protection |
+|---|---|
+| `X-Powered-By` removed | Prevents stack fingerprinting |
+| `Content-Security-Policy` | XSS — restricts executable scripts |
+| `X-Frame-Options: SAMEORIGIN` | Clickjacking — blocks iframe embedding |
+| `X-Content-Type-Options: nosniff` | MIME sniffing attacks |
+| `Strict-Transport-Security` | SSL stripping — forces HTTPS |
+| `Referrer-Policy` | Leaks URL info to third parties |
+
+**Why Helmet goes before CORS and rate limiter:**
+If CORS rejects a request before Helmet runs, that error response is sent
+without security headers. Helmet must run first so every response —
+including rejections — carries the correct headers.
+
+
 ---
 
 
@@ -874,6 +909,7 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Rate limiting added to API (express-rate-limit 7.5.0 — 100 req / 15 min global)
 ✔ Exact dependency versions enforced across full monorepo — .npmrc save-exact=true
 ✔ @types/node corrected from 20.0.0 → 20.19.39 (compatible with TypeScript 6)
+✔ Helmet.js HTTP security headers added to API (helmet 8.1.0)
 ```
 
 
@@ -1068,6 +1104,7 @@ exact pinning automatic — no manual removal of `^` required.
 CI conditions. `npm install` uses cached `node_modules` and can mask
 incompatibilities that only surface in CI.
 
+
 ### Why `@types/node` Must Never Be Pinned to `x.0.0`
 
 **Decision:** Pin `@types/node` to `20.19.39` (latest stable `20.x` patch).
@@ -1080,6 +1117,7 @@ that declares `@types/node` as a direct dependency.
 patch updates within `20.x` automatically.
 **Constraint:** Never pin any `@types/*` package to its `.0.0` release.
 
+
 ### Why CodeQL Is Not a Merge Gate
 
 **Decision:** CodeQL runs post-merge, results post to Security tab.
@@ -1089,6 +1127,7 @@ not binary pass/fail like a build or test. Adding it as a hard gate
 adds 8-10 minutes to every PR for informational output.
 **Revisit when:** API handles real traffic or sensitive data. Adding CodeQL
 to branch protection is a one-minute change in Settings → Branches.
+
 
 ### Why `npm ci` in CI, `npm ci` Locally After Dependency Changes
 
@@ -1100,6 +1139,30 @@ incompatibilities that only surface on a clean install. `npm ci` deletes
 CI conditions precisely.
 **Rule:** `npm install` → for adding new packages. `npm ci` → for
 verifying the build is clean before committing.
+
+
+### Why Helmet Middleware Order Is Non-Negotiable
+
+**Decision:** `app.use(helmet())` is always the first middleware registered.
+**Reason:** Security headers must be present on every response — including
+CORS rejections, rate limit responses, and 404s. Any middleware registered
+before Helmet can send a response without security headers.
+**Constraint:** Never move Helmet below cors() or any other middleware.
+Order: helmet → cors → limiter → routes.
+
+### Why Root `package-lock.json` Triggers Both Deploy Pipelines
+
+**Decision:** Both `deploy-frontend.yml` and `deploy-backend.yml` include
+`package-lock.json` and root `package.json` in their path filters.
+**Reason:** The root `package-lock.json` is the single source of truth for
+all dependency versions across the monorepo. If a shared dependency changes,
+both frontend and backend must redeploy against the updated dependency tree.
+Filtering it out risks deploying a frontend or backend built against stale deps.
+**Trade-off:** Occasional unnecessary deploys (e.g. adding a backend-only
+package triggers a frontend redeploy). This is acceptable — GitHub Pages
+deploys are free and fast. Safety over efficiency here.
+**Revisit when:** Monorepo grows large enough that unnecessary deploys have
+a real cost (build time, Render hours, etc.).
 
 
 ---
