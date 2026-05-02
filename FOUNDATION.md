@@ -460,7 +460,8 @@ Steps:
 8. npm run test              (Vitest)
 ```
 
-
+> **NOTE:** CI pipeline (`ci.yml`) is complemented by CodeQL static analysis
+> (`codeql.yml`) which runs in parallel on every PR. See Section 7.9.
 > **CONSTRAINT:** Never use `npm audit --production`. Dev dependency vulnerabilities are real risks.
 > **CONSTRAINT:** Always use `actions/checkout@v6` and `actions/setup-node@v6`. Earlier versions
 > emit Node.js deprecation warnings in CI. These are GitHub-official actions maintained for
@@ -688,7 +689,7 @@ Location: GitHub → repo → Settings → Security & Analysis
 | Dependabot alerts | ✅ Enabled | Alerts on vulnerable dependencies via GitHub Advisory Database |
 | Dependabot malware alerts | ✅ Enabled | Alerts if an installed package is later flagged as malware |
 | Dependabot version updates | ✅ Handled via `dependabot.yml` | See Section 7.6 |
-| Code scanning (CodeQL) | ⏳ Pending | Next item — requires workflow file |
+| Code scanning (CodeQL) | ✅ Enabled | `.github/workflows/codeql.yml` — see Section 7.9 |
 | Security policy | ⏸️ Skipped | Optional — relevant for team/public contributor projects |
 | Private vulnerability reporting | ⏸️ Skipped | Not needed for solo project |
 | Dependabot security updates (UI) | ⏸️ Disabled intentionally | Would create uncoordinated PRs outside `dependabot.yml` control |
@@ -713,6 +714,54 @@ Dependabot malware alerts fire if a package already installed in your repo is
 later identified as malware — this is exactly the Axios supply chain attack
 pattern (March 2026). Standard Dependabot alerts cover CVEs; malware alerts
 cover the active compromise scenario.
+
+
+### 7.9 CodeQL Static Analysis (`codeql.yml`)
+
+Triggers: push to `main`, every pull request, weekly schedule (Monday 04:27 UTC)
+Jobs (parallel, fail-fast: false):
+Analyze (javascript-typescript)
+→ Builds semantic database of all TS/JS/HTML source
+→ Runs 50+ security queries (injection, XSS, CORS issues, logic errors)
+→ Results posted to Security → Code scanning alerts
+
+Analyze (actions)
+→ Scans all .github/workflows/*.yml files
+→ Detects workflow misconfigurations and secret exposure patterns
+
+
+**Languages covered:**
+
+| Repo language | CodeQL value | Coverage |
+|---|---|---|
+| TypeScript 92.8% | `javascript-typescript` | ✅ Full |
+| JavaScript 3.3% | `javascript-typescript` | ✅ Full — same extractor |
+| HTML 3.9% | `javascript-typescript` | ✅ Inline scripts covered |
+| GitHub Actions YAML | `actions` | ✅ Full |
+
+**Permissions:**
+
+```yaml
+permissions:
+  contents: read         # Read source files for analysis only
+  security-events: write # Post results to GitHub Security tab only
+```
+
+No write access to code, branches, or secrets. Minimum required. [web:53]
+
+**Performance:**
+- First run builds full database — slowest run
+- Subsequent runs use TRAP caching — only changed files reprocessed
+- PR scans use incremental analysis (shipped May 2025) — up to 58% faster
+  for TypeScript specifically
+
+**Where to view results:**
+GitHub → repo → Security → Code scanning alerts
+
+
+> **CONSTRAINT:** Never disable CodeQL without a documented reason.
+> Results appear in the Security tab, not as PR failures by default —
+> check the Security tab after each merge.
 
 
 ---
@@ -766,6 +815,7 @@ These are real issues identified by code review. They do not break the system bu
   actions/upload-pages-artifact@v3 + actions/deploy-pages@v4
 ✔ gh-pages branch eliminated — frontend deploys via GitHub Actions API, not branch
 ✔ GitHub Security & Analysis configured — see Section 7.8
+✔ CodeQL static analysis configured (javascript-typescript + actions) — see Section 7.9
 ✔ deploy-frontend.yml permissions narrowed from contents:write to pages:write + id-token:write
 ```
 
@@ -921,6 +971,19 @@ CI-gated flow. The UI toggle creates automatic PRs outside that flow —
 duplicating effort and potentially conflicting with `dependabot.yml` group rules.
 Explicit configuration in `dependabot.yml` always wins over UI toggles.
 **Constraint:** If `dependabot.yml` is ever removed, re-evaluate this toggle.
+
+
+### Why CodeQL Scans Both `javascript-typescript` and `actions`
+
+**Decision:** Run two CodeQL matrix jobs — `javascript-typescript` and `actions`.
+**Reason:** The `actions` scanner (generally available April 2025) detects
+misconfigured GitHub Actions workflows — secret exposure, excessive permissions,
+injection via untrusted input. Since our project's security model is heavily
+workflow-based (6 workflow files), scanning the workflows themselves is as
+important as scanning the application code.
+**Constraint:** Both matrix entries must be kept. Removing `actions` would leave
+our CI/CD pipeline unanalysed.
+
 
 ---
 
