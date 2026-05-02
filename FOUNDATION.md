@@ -535,6 +535,19 @@ Steps:
 > from GitHub Actions to maintain path filtering and audit trail.
 
 
+Build command: `npm ci && npm run build && npm prune --omit=dev`
+
+Rationale: `npm ci` installs all dependencies including devDependencies
+(TypeScript, types). `npm run build` compiles TypeScript to JavaScript.
+`npm prune --omit=dev` removes devDependencies before the server starts,
+keeping the runtime slim and reducing attack surface. `--omit=dev` is the
+current npm v7+ standard. `--production` is deprecated.
+
+CONSTRAINT: Never use `npm ci --include=dev` as a build command. It is a
+workaround for a self-inflicted problem. The correct fix is to never set
+NODE_ENV in the Render dashboard — see Section 10 Decision Log.
+
+
 ### 7.4 GitHub Actions IAM
 
 
@@ -912,6 +925,9 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Helmet.js HTTP security headers added to API (helmet 8.1.0)
 ✔ SESSION.md created — AI session bookmark for context re-entry
 ✔ AI_POLICY.md updated — Context Loss Protocol added
+✔ Structured logging with pino — request/response logging, header redaction,
+  4xx=warn, 5xx=error, trust proxy for Render load balancer
+✔ `workflow_dispatch` added to deploy-backend.yml — manual deploy escape hatch
 ```
 
 
@@ -919,11 +935,7 @@ These are real issues identified by code review. They do not break the system bu
 
 
 ```
-→ Rate limiting on API endpoints (express-rate-limit)
-→ Helmet.js HTTP security headers
-✔ SESSION.md + AI_POLICY.md Context Loss Protocol
 → Auth enforcement on API endpoints
-→ Structured logging with pino
 → Pin GitHub Actions to commit SHA (supply chain security)
 → Phase 4: Safe AI Usage Setup (VS Code AI extension + rules + prompt discipline)
 ```
@@ -1168,6 +1180,32 @@ deploys are free and fast. Safety over efficiency here.
 a real cost (build time, Render hours, etc.).
 
 
+### Why NODE_ENV Must Never Be Set in the Render Dashboard
+
+**Decision:** `NODE_ENV` must never be set in the Render dashboard environment variables.
+
+**Reason:** Render's `npm ci` install step respects `NODE_ENV`. If set to `production`,
+npm silently skips devDependencies — including `typescript` and `@types/node` — causing
+TypeScript compilation to fail with errors like `husky: not found` and `tsc: not found`.
+`NODE_ENV` is managed exclusively by dotenvx at runtime via `.env.production`.
+The build phase must always have full access to devDependencies.
+
+**Why not `--include=dev` as a permanent fix:** This flag installs ALL devDependencies
+onto Render — including eslint, vitest, husky, and lint-staged. These tools have zero
+purpose on a production server and unnecessarily increase the attack surface.
+It compensates for a self-inflicted problem rather than fixing the root cause.
+
+**Correct build command:** `npm ci && npm run build && npm prune --omit=dev`
+
+**Render build context:** Docker multi-stage builds are available on the Render free
+plan and are the professional long-term solution. Deliberately deferred — the current
+`npm prune --omit=dev` pattern achieves the same runtime result without added Dockerfile
+complexity. Revisit during the hardening sprint.
+
+**Constraint:** Never set `NODE_ENV` in the Render dashboard. Never use
+`--include=dev` as a permanent fix.
+
+
 ---
 
 
@@ -1187,7 +1225,7 @@ The following are known, valid improvements that were deliberately deferred. The
 | Private npm registry | Enterprise-level, not required for this project size |
 | Deno / Bun runtime | No advantage over Node.js for current requirements |
 | HashiCorp Vault | Overkill until multi-environment production deployments exist |
-
+| Docker multi-stage production build | Available on Render free plan but deferred — `npm ci && npm run build && npm prune --omit=dev` achieves the same runtime result without Dockerfile complexity. Revisit during hardening sprint |
 
 > A professional system is not built by adding everything at once. It is built by adding the right things at the right time.
 
@@ -1212,5 +1250,5 @@ The next project will:
 ---
 
 
-*Last updated: April 2026 — post fix/deploy-frontend-node24 branch*
+*Last updated: May 2026 — post pino structured logging + NODE_ENV constraint*
 *Maintained by: PuguDev*
