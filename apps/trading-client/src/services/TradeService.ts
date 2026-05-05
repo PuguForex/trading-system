@@ -2,13 +2,13 @@ import { Trade, TradeSchema } from "shared-types";
 import { z } from "zod";
 import { env } from "config";
 
-function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
+function fetchWithTimeout(url: string, timeoutMs: number, options?: RequestInit): Promise<Response> {
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       reject(new Error("Request timed out"));
     }, timeoutMs);
 
-    fetch(url)
+    fetch(url, options)
       .then(res => {
         clearTimeout(timeout);
         resolve(res);
@@ -20,12 +20,12 @@ function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   });
 }
 
-async function fetchWithRetry(url: string, retries = 2): Promise<Response> {
+async function fetchWithRetry(url: string, retries = 2, options?: RequestInit): Promise<Response> {
   let lastError: unknown;
 
   for (let i = 0; i <= retries; i++) {
     try {
-      return await fetchWithTimeout(url, 3000);
+      return await fetchWithTimeout(url, 3000, options);
     } catch (error) {
       lastError = error;
     }
@@ -38,7 +38,9 @@ const TradesArraySchema = z.array(TradeSchema);
 
 export async function loadTrades(): Promise<Trade[]> {
   try {
-    const response = await fetchWithRetry(`${env.API_URL}/trades`);
+    const response = await fetchWithRetry(`${env.API_URL}/trades`, 2, {
+      headers: { 'x-api-key': env.API_KEY },
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
