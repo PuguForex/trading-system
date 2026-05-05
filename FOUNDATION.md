@@ -882,7 +882,7 @@ These are real issues identified by code review. They do not break the system bu
 | 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/deploy-backend.yml` | ✅ Fixed — `deploy-backend.yml` created with path filters. Render auto-deploy disabled. |
 | 7 | `@types/node` pinned to `20.0.0` — incompatible with TypeScript 6 | `packages/config/package.json` | ✅ Fixed — updated to `20.19.39` on branch `feature/rate-limiting`, then upgraded to `22.19.17` on branch `chore/node22-runtime-alignment` |
 | 8 | `^` and `~` present in multiple `package.json` files across monorepo | `apps/api-service`, `apps/web-client`, `packages/config` | ✅ Fixed — all versions pinned exactly, `.npmrc` added with `save-exact=true` |
-| 9 | `shared-types` compiles to CJS only. Vite (`web-client`) requires ESM. Workaround: `vite.config.ts` resolve alias points to `packages/shared-types/src/index.ts` directly. | `apps/web-client/vite.config.ts` | ⏸️ Deferred — proper fix is dual CJS/ESM packaging with `package.json` `exports` field. Revisit in hardening sprint. |
+| 9 | `shared-types` needed ESM-compatible resolution for Vite (`web-client`). | `packages/shared-types/package.json` | ✅ Fixed — `exports` field added with `"import": "./src/index.ts"` for ESM consumers. CJS consumers (`api-service`, `trading-client`) continue using `dist/index.js`. Hardcoded Vite alias workaround removed. |
 
 
 ---
