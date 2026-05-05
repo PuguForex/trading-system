@@ -17,3 +17,4 @@ Thumbs.db
 .env.*
 apps/**/.env
 apps/**/.env.*
+context.txt
