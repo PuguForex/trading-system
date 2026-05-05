@@ -52,7 +52,7 @@ The trading domain is the **vehicle**, not the destination. The real project is:
 
 | Layer | Technology |
 |---|---|
-| Runtime | Node.js 20 |
+| Runtime | Node.js 22 |
 | Language | TypeScript 6 (strict mode) |
 | Backend framework | Express 5 |
 | Frontend build | Vite 8 |
@@ -154,7 +154,7 @@ File: `.devcontainer/devcontainer.json`
 
 | Setting | Value | Why |
 |---|---|---|
-| `image` | `mcr.microsoft.com/devcontainers/typescript-node:20` | Official, maintained, Node 20 |
+| `image` | `mcr.microsoft.com/devcontainers/typescript-node:22` | Official, maintained, Node 22 |
 | `remoteUser` | `node` | Non-root execution |
 | `--cap-drop=ALL` | All Linux capabilities dropped | Least privilege at kernel level |
 | `--security-opt=no-new-privileges` | Cannot escalate privileges | Prevents privilege escalation |
@@ -451,7 +451,7 @@ Triggers: every push to `main`, every pull request.
 ```
 Steps:
 1. Checkout repository       (actions/checkout@v6)
-2. Setup Node.js 20          (actions/setup-node@v6)
+2. Setup Node.js 22          (actions/setup-node@v6)
 3. npm ci
 4. Copy .env.ci → .env
 5. npm run lint              (ESLint across all .ts files)
@@ -625,16 +625,16 @@ File location:
 - **Review before merge:** All Dependabot PRs are reviewed; CI must pass before merge
 
 
-**`@types/node` pinned to `20.x`:**
+**`@types/node` pinned to `22.x`:**
 ```json
-"@types/node": "20.x"
+"@types/node": "22.19.17"
 ```
-Reason: `@types/node` is a dev-only type definition package. Upgrading to `22.x`
-or higher introduces Node.js 22 API types incompatible with our current runtime
-(Node.js 20 on Render), causing TypeScript compilation errors on properties that
-don't exist at runtime. Pinned to `20.x` until runtime is upgraded.
-Dependabot is configured to **ignore** major/minor `@types/node` upgrades —
-patch updates within `20.x` are still allowed.
+Reason: `@types/node` is a dev-only type definition package. The version major
+must match the Node.js runtime major (Node.js 22 on Render). Using a higher
+major (e.g. `25.x`) introduces API types that do not exist at runtime, causing
+silent correctness issues. Pinned to `22.19.17` (latest `22.x` patch at time
+of Node 22 upgrade). Dependabot is configured to **ignore** `23.x` and above —
+patch updates within `22.x` are allowed.
 
 
 **Why exact versions + Dependabot is the correct combination:**
@@ -880,7 +880,7 @@ These are real issues identified by code review. They do not break the system bu
 | 4 | No Zod validation on API response in web client | `apps/web-client/src/main.ts` | ✅ Fixed — branch `fix/known-gaps` |
 | 5 | `ALLOWED_OUTBOUND_HOSTS` declared in schema but never enforced | `packages/config/src/env.ts` | ⏸️ Deferred — requires infrastructure-level enforcement (egress firewall / reverse proxy). Cannot be enforced at application layer alone. Revisit in hardening sprint. |
 | 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/deploy-backend.yml` | ✅ Fixed — `deploy-backend.yml` created with path filters. Render auto-deploy disabled. |
-| 7 | `@types/node` pinned to `20.0.0` — incompatible with TypeScript 6 | `packages/config/package.json` | ✅ Fixed — updated to `20.19.39` on branch `feature/rate-limiting` |
+| 7 | `@types/node` pinned to `20.0.0` — incompatible with TypeScript 6 | `packages/config/package.json` | ✅ Fixed — updated to `20.19.39` on branch `feature/rate-limiting`, then upgraded to `22.19.17` on branch `chore/node22-runtime-alignment` |
 | 8 | `^` and `~` present in multiple `package.json` files across monorepo | `apps/api-service`, `apps/web-client`, `packages/config` | ✅ Fixed — all versions pinned exactly, `.npmrc` added with `save-exact=true` |
 
 
@@ -929,6 +929,9 @@ These are real issues identified by code review. They do not break the system bu
   4xx=warn, 5xx=error, trust proxy for Render load balancer
 ✔ `workflow_dispatch` added to deploy-backend.yml — manual deploy escape hatch
 ✔ GitHub Actions pinned to commit SHA (supply chain attack prevention)
+✔ Node.js runtime upgraded from 20 to 22 LTS across all layers — Dev Container,
+  CI, deploy-frontend, @types/node pins (packages/config + apps/trading-client),
+  Dependabot ignore list updated to allow 22.x patches
 ```
 
 
@@ -1220,6 +1223,32 @@ This is the tj-actions/changed-files attack (March 2025) defense pattern.
 has a newer version available. No manual SHA tracking required.
 **Constraint:** Every new workflow `uses:` reference must be pinned to a
 commit SHA on the first commit. Never merge a workflow using a tag reference.
+
+
+### Why Node.js Was Upgraded from 20 to 22
+
+**Decision:** Upgrade all Node.js version references from 20 to 22 LTS.
+**Reason:** Node.js 20 reached end-of-life in March 2026. Render was already
+running Node.js 22.22.0 in production. The project was misaligned — declaring
+Node 20 while the live runtime was Node 22. Aligning to 22 LTS is correct and
+necessary. Node.js 22 LTS security support runs until April 2027.
+**Constraint:** All layers must declare the same Node.js major — Dev Container,
+CI, and @types/node pins. Never let these drift independently again.
+**Revisit when:** Node.js 24 becomes LTS (October 2026).
+
+
+### Why `@types/node` Must Be Pinned Consistently Across All Monorepo Packages
+
+**Decision:** Every package that declares `@types/node` must use the same exact
+version — currently `22.19.17` in both `packages/config` and `apps/trading-client`.
+**Reason:** `apps/trading-client` previously drifted to `25.5.0` because the
+constraint was only documented for `packages/config`. A mismatched `@types/node`
+across packages means different packages compile against different Node.js API
+surface — TypeScript will accept calls to APIs that don't exist at runtime.
+**Constraint:** When upgrading Node.js runtime, update ALL `@types/node` pins
+in the same branch. Dependabot ignore list must also be updated in the same commit.
+**How it's enforced:** Dependabot ignore list blocks `23.x`+ globally. Any
+`@types/node` upgrade PR from Dependabot will be within `22.x` only.
 
 
 ---

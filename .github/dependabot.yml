@@ -11,7 +11,7 @@ updates:
     open-pull-requests-limit: 5
     ignore:
       - dependency-name: "@types/node"
-        versions: ["21.x", "22.x", "23.x", "24.x", "25.x"]
+        versions: ["23.x", "24.x", "25.x"]
     groups:
       production-dependencies:
         dependency-type: "production"
