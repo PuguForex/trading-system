@@ -86,3 +86,28 @@ Every change must be traceable from decision to code to documentation:
 > **CONSTRAINT:** No change is complete until all four layers are updated —
 > code, decision log, roadmap status, and commit message. A merged PR with
 > no FOUNDATION.md update is an incomplete change.
+
+## Local Verification — Required Before Every Commit
+
+Always in this exact order after making changes:
+
+1. `npm ci`
+2. `npm run build`
+3. `npm run dev:api` — verify server starts without errors
+4. `curl` without key — must return expected rejection response
+5. `curl` with key — must return data
+6. `npm run dev:web` — verify browser loads correctly
+7. `npm run test` — all tests must pass
+8. `npm run lint` — must be clean
+
+> **CONSTRAINT:** No `git add`, no commit, no push until all steps above pass.
+> **CONSTRAINT:** Share output of each step. Do not assume it passed.
+
+## Session Re-entry Protocol
+
+> **CONSTRAINT:** On session start when the user provides `context.txt`, read `SESSION.md`
+> in full using READ mode before responding to anything.
+> **CONSTRAINT:** Before writing any script name, file path, or command — verify it
+> verbatim from the context dump. Never construct from pattern matching. If not found, ask.
+> **CONSTRAINT:** No implementation, no code, no commands until `SESSION.md` is confirmed
+> read and acknowledged.

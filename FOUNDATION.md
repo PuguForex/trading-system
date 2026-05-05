@@ -882,6 +882,7 @@ These are real issues identified by code review. They do not break the system bu
 | 6 | Render deploys on every push to any file — no path filtering | `.github/workflows/deploy-backend.yml` | ✅ Fixed — `deploy-backend.yml` created with path filters. Render auto-deploy disabled. |
 | 7 | `@types/node` pinned to `20.0.0` — incompatible with TypeScript 6 | `packages/config/package.json` | ✅ Fixed — updated to `20.19.39` on branch `feature/rate-limiting`, then upgraded to `22.19.17` on branch `chore/node22-runtime-alignment` |
 | 8 | `^` and `~` present in multiple `package.json` files across monorepo | `apps/api-service`, `apps/web-client`, `packages/config` | ✅ Fixed — all versions pinned exactly, `.npmrc` added with `save-exact=true` |
+| 9 | `shared-types` compiles to CJS only. Vite (`web-client`) requires ESM. Workaround: `vite.config.ts` resolve alias points to `packages/shared-types/src/index.ts` directly. | `apps/web-client/vite.config.ts` | ⏸️ Deferred — proper fix is dual CJS/ESM packaging with `package.json` `exports` field. Revisit in hardening sprint. |
 
 
 ---
@@ -932,6 +933,11 @@ These are real issues identified by code review. They do not break the system bu
 ✔ Node.js runtime upgraded from 20 to 22 LTS across all layers — Dev Container,
   CI, deploy-frontend, @types/node pins (packages/config + apps/trading-client),
   Dependabot ignore list updated to allow 22.x patches
+✔ API key authentication added to GET /trades — X-Api-Key header required, 401 returned
+  on mismatch. Middleware at apps/api-service/src/middleware/auth.ts, mounted after
+  rate limiter. API_KEY made required in Zod schema. Key stored in Render dashboard as
+  secret env var. Browser key (VITE_API_KEY) is build-time visible in JS bundle —
+  accepted for demo scope. See Section 10 and Known Gap 9.
 ```
 
 
@@ -939,7 +945,6 @@ These are real issues identified by code review. They do not break the system bu
 
 
 ```
-→ Auth enforcement on API endpoints
 → Phase 4: Safe AI Usage Setup (VS Code AI extension + rules + prompt discipline)
 ```
 
@@ -1249,6 +1254,24 @@ surface — TypeScript will accept calls to APIs that don't exist at runtime.
 in the same branch. Dependabot ignore list must also be updated in the same commit.
 **How it's enforced:** Dependabot ignore list blocks `23.x`+ globally. Any
 `@types/node` upgrade PR from Dependabot will be within `22.x` only.
+
+
+### Why API Key Auth Uses a Static Shared Secret, Not JWT
+
+**Decision:** `GET /trades` is protected by a static `API_KEY` shared secret via
+`X-Api-Key` header. JWT was not used.
+
+**Reason:** No human users exist in this system. JWT is for user session authentication.
+A static shared secret is the correct pattern for machine-to-machine auth between a
+single trusted client and a single trusted server.
+
+**Browser caveat:** `VITE_API_KEY` is injected at Vite build time and is visible in
+the compiled JS bundle. Accepted for demo/portfolio scope. A proxy pattern (server holds
+the key, browser calls the proxy) is the correct long-term fix. Deferred to hardening sprint.
+
+**Constraint:** Never use JWT for M2M auth where no user identity exists.
+**Constraint:** `API_KEY` must be set as a secret env var in the Render dashboard.
+Never commit a real key to any env file.
 
 
 ---

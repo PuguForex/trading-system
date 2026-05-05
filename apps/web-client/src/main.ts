@@ -1,9 +1,14 @@
 import { TradesArraySchema } from "shared-types";
 
 const rawUrl = import.meta.env.VITE_API_URL;
+const apiKey = import.meta.env.VITE_API_KEY;
 
 if (!rawUrl) {
   throw new Error("VITE_API_URL is not defined");
+}
+
+if (!apiKey) {
+  throw new Error("VITE_API_KEY is not defined");
 }
 
 const API_URL = rawUrl.replace(/\/$/, "");
@@ -19,7 +24,9 @@ async function loadTrades() {
   }
 
   try {
-    const res = await fetch(`${API_URL}/trades`);
+    const res = await fetch(`${API_URL}/trades`, {
+      headers: { 'x-api-key': apiKey },
+    });
 
     if (!res.ok) {
       throw new Error(`API error: ${res.status}`);
