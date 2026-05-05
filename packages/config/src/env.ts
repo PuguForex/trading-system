@@ -45,7 +45,7 @@ const schema = z.object({
   ALLOWED_ORIGINS: z.string().min(1),
   // TODO: enforce outbound filtering middleware using this value (Phase 8 - Network Security)
   ALLOWED_OUTBOUND_HOSTS: z.string().min(1).optional(),
-  API_KEY: z.string().min(1).optional(),
+  API_KEY: z.string().min(1),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"), // ← ADD

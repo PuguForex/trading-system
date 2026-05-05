@@ -10,6 +10,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { Trade } from "shared-types";
 import { env } from "config";
+import { requireApiKey } from './middleware/auth';
 
 const logger = pino({
   level: env.NODE_ENV === "production" ? "info" : "debug",
@@ -79,6 +80,8 @@ const limiter = rateLimit({
 });
 
 app.use(limiter);
+
+app.use(requireApiKey);
 
 const trades: Trade[] = [
   { symbol: "EURUSD", entry: 1.1, exit: 1.2, volume: 1 },
