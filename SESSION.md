@@ -8,7 +8,7 @@
 
 ## Current Position
 
-- **Phase:** Section 9.2 — High Impact, Low Effort Security
+- **Phase:** Section 9.2 — High Impact, Low Effort
 - **Last completed:** `security/pin-actions-to-sha` — all GitHub Actions pinned to commit SHA ✅
 - **Active branch:** none — `main` is clean
 
@@ -22,27 +22,22 @@
 - ✅ All GitHub Actions workflow files pinned to commit SHA
 - ✅ `FOUNDATION.md` updated — SHA pinning decision log + roadmap status
 - ✅ GitHub connector disconnected from Perplexity
-- ⚠️ Node.js runtime mismatch discovered — Render running 22.22.0, project targets 20.x
 
 ---
 
-## Immediate Next Steps (in order)
+## Immediate Next Steps
 
-### 1. Node.js Runtime Alignment — FIRST
-- Render production is running **Node.js 22.22.0 (default)**
-- Project standard is **Node.js 20** (Dev Container, CI, `@types/node` pin)
-- Decision needed: pin Render to Node.js 20 now, OR upgrade full project to Node.js 22
-- Likely approach: add `engines: { "node": "20.x" }` to root `package.json` + set `NODE_VERSION=20.22.0` in Render dashboard
-- FOUNDATION.md Section 10 decision log entry required
-
-### 2. Auth Enforcement on API Endpoints
-- Add API key validation to `apps/api-service`
-- Requests without valid key get rejected
-
-### 3. Phase 4 — Safe AI Usage Setup
+### 1. Phase 4 — Safe AI Usage Setup
 - VS Code AI extension setup (Copilot or Codeium)
 - Prompt discipline and templates
 - AI workflow integration into Git + CI
+
+### 2. Documentation Sync
+- Keep `SESSION.md` aligned with `FOUNDATION.md`
+- Keep `README.md` aligned with current runtime and stack decisions
+
+### 3. Verify Current State
+- Confirm all documentation reflects the latest committed architecture decisions before starting any new topic
 
 ---
 
@@ -52,9 +47,9 @@
 |---|---|
 | `actions/checkout@v6` | `de0fac2e4500dabe0009e67214ff5f5447ce83dd` |
 | `actions/setup-node@v6` | `48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e` |
-| `actions/upload-pages-artifact@v3` | `56afc609e74202658d3ffba0e8f6dda462b719fa` |
-| `actions/deploy-pages@v4` | `d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e` |
-| `github/codeql-action/*@v3` | `53e96ec3b35fce51c141c0d6f0e31028a448722d` |
+| `actions/upload-pages-artifact@v5` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
+| `actions/deploy-pages@v5` | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128` |
+| `github/codeql-action/*@v4` | `e46ed2cbd01164d986452f91f178727624ae40d7` |
 
 ---
 
@@ -71,7 +66,7 @@
 ## Key Constraints (Quick Reference)
 
 - Exact dependency versions only — no `^` or `~`
-- Middleware order: `helmet()` → `cors()` → `limiter` → routes
+- Middleware order: `helmet()` → `pinoHttp()` → `cors()` → `limiter` → `requireApiKey` → routes
 - Never touch `.env.secrets`
 - Never set `NODE_ENV` in the Render dashboard — managed by dotenvx at runtime only
 - All workflow `uses:` references must be pinned to commit SHA — never a tag

@@ -205,7 +205,7 @@ apps/api-service     →  packages/config  →  (dotenv, zod)
 apps/api-service     →  packages/shared-types  →  (zod)
 apps/trading-client  →  packages/config
 apps/trading-client  →  packages/shared-types
-apps/web-client      →  (standalone, Vite, uses VITE_API_URL)
+apps/web-client      →  (standalone, Vite, uses VITE_API_URL, VITE_API_KEY)
 ```
 
 
@@ -482,15 +482,15 @@ Triggers: push to `main` **only when** these paths change:
 Jobs: build → deploy (sequential, deploy depends on build)
 
 build job:
-  1. Checkout, Node 20, npm ci
+  1. Checkout, Node 22, npm ci
   2. npm run build -w packages/shared-types
-  3. npm run build:web  (VITE_API_URL injected from GitHub vars)
-  4. actions/upload-pages-artifact@v3  (uploads dist/ to GitHub Pages API)
+  3. npm run build:web  (VITE_API_URL injected from GitHub vars, VITE_API_KEY injected from Github secrets)
+  4. actions/upload-pages-artifact@v5  (uploads dist/ to GitHub Pages API)
 
 deploy job:
   permissions: pages: write, id-token: write
   environment: github-pages
-  5. actions/deploy-pages@v4
+  5. actions/deploy-pages@v5
 ```
 
 
@@ -799,7 +799,7 @@ GitHub → repo → Security → Code scanning alerts
 
 ### 7.10 Rate Limiting (`apps/api-service`)
 
-Package: `express-rate-limit 7.5.0`
+Package: `express-rate-limit 8.4.1`
 Applied: globally in `apps/api-service/src/index.ts` — before all routes
 
 ```typescript
@@ -834,15 +834,19 @@ Package: `helmet 8.1.0`
 Applied: globally in `apps/api-service/src/index.ts` — before `cors()` and `limiter`
 
 ```typescript
-app.use(helmet());   // must be first — sets headers on every response
-app.use(cors(...));
-app.use(limiter);
+app.use(helmet());       // must be first — sets headers on every response
+app.use(pinoHttp(...));  // logging
+app.use(cors(...));      // origin policy
+app.use(limiter);        // rate limiting
+app.use(requireApiKey);  // authentication
 ```
 
 **Middleware order (non-negotiable):**
 helmet() → sets security headers on every response including error responses
+pinoHttp() → applies logging and monitoring
 cors() → applies origin policy
 limiter → applies rate limiting
+requireApiKey → applies authentication
 routes → business logic
 
 
@@ -857,7 +861,7 @@ routes → business logic
 | `Strict-Transport-Security` | SSL stripping — forces HTTPS |
 | `Referrer-Policy` | Leaks URL info to third parties |
 
-**Why Helmet goes before CORS and rate limiter:**
+**Why Helmet goes before all other middleware:**
 If CORS rejects a request before Helmet runs, that error response is sent
 without security headers. Helmet must run first so every response —
 including rejections — carries the correct headers.
@@ -914,15 +918,15 @@ These are real issues identified by code review. They do not break the system bu
   actions/setup-node@v6 (Node.js 24 compatible, no deprecation warnings in CI)
 ✔ All known npm vulnerabilities resolved (npm audit clean)
 ✔ Frontend deploy pipeline migrated from peaceiris/actions-gh-pages to official
-  actions/upload-pages-artifact@v3 + actions/deploy-pages@v4
+  actions/upload-pages-artifact@v5 + actions/deploy-pages@v5
 ✔ gh-pages branch eliminated — frontend deploys via GitHub Actions API, not branch
 ✔ GitHub Security & Analysis configured — see Section 7.8
 ✔ CodeQL static analysis configured (javascript-typescript + actions) — see Section 7.9
 ✔ deploy-frontend.yml permissions narrowed from contents:write to pages:write + id-token:write
 ✔ Explicit permissions added to all workflows — CodeQL alerts #1 #2 #3 resolved (CWE-275)
-✔ Rate limiting added to API (express-rate-limit 7.5.0 — 100 req / 15 min global)
+✔ Rate limiting added to API (express-rate-limit 8.4.1 — 100 req / 15 min global)
 ✔ Exact dependency versions enforced across full monorepo — .npmrc save-exact=true
-✔ @types/node corrected from 20.0.0 → 20.19.39 (compatible with TypeScript 6)
+✔ @types/node corrected from 20.0.0 → 20.19.39, then upgraded to 22.19.17 (matches Node 22 runtime on Render and latest LTS version)
 ✔ Helmet.js HTTP security headers added to API (helmet 8.1.0)
 ✔ SESSION.md created — AI session bookmark for context re-entry
 ✔ AI_POLICY.md updated — Context Loss Protocol added
@@ -956,7 +960,6 @@ These are real issues identified by code review. They do not break the system bu
 → SAST in CI (semgrep — static security analysis on code)
 → Secret scanning in CI (TruffleHog — blocks accidental secret commits)
 → Dependency Review action on PRs (GitHub native, zero config)
-→ Structured logging with pino (replaces console.log)
 → Integration tests (API + client together)
 → Prettier enforcement
 ```
@@ -966,6 +969,7 @@ These are real issues identified by code review. They do not break the system bu
 
 
 ```
+→ ALLOWED_OUTBOUND_HOSTS egress enforcement at infrastructure layer (reverse proxy / firewall)
 → SBOM generation (Software Bill of Materials)
 → Container image scanning with Trivy
 → OIDC token authentication for Render (replaces long-lived static tokens)
@@ -984,10 +988,13 @@ These are real issues identified by code review. They do not break the system bu
 ## 10. Decision Log
 
 
+
 Key architectural decisions, why they were made, and what was considered.
 
 
+
 ### Why npm Workspaces over Nx / Turborepo
+
 
 
 **Decision:** Use npm workspaces.
@@ -995,7 +1002,9 @@ Key architectural decisions, why they were made, and what was considered.
 **Revisit when:** Build times exceed 2 minutes or dependency graph becomes unmanageable.
 
 
+
 ### Why Render + GitHub Pages over other platforms
+
 
 
 **Decision:** Render for backend, GitHub Pages for frontend.
@@ -1003,7 +1012,9 @@ Key architectural decisions, why they were made, and what was considered.
 **Revisit when:** Project requires persistent storage, custom domains, or advanced networking.
 
 
+
 ### Why Dev Container Before Business Logic
+
 
 
 **Decision:** Dev Container defined and verified before any application code is written.
@@ -1011,7 +1022,9 @@ Key architectural decisions, why they were made, and what was considered.
 **Constraint:** This order must be maintained in all future projects derived from this foundation.
 
 
+
 ### Why `.env.secrets` Over Direct `.env` Usage
+
 
 
 **Decision:** Separate secrets into `.env.secrets`, loaded only via `loadSecrets("server-init")`.
@@ -1019,7 +1032,9 @@ Key architectural decisions, why they were made, and what was considered.
 **Constraint:** Never consolidate secrets back into `.env.{environment}` files.
 
 
+
 ### Why Zod for Both Types and Validation
+
 
 
 **Decision:** Use Zod for schema definition AND TypeScript type inference.
@@ -1027,22 +1042,26 @@ Key architectural decisions, why they were made, and what was considered.
 **Constraint:** Never define a type manually when a Zod schema already exists for it.
 
 
+
 ### Why `AI_POLICY.md` as a Separate File
+
 
 
 **Decision:** Keep `AI_POLICY.md` separate from `FOUNDATION.md`.
 **Reason:** AI tools (Cursor, Copilot) are configured to look for specific policy files. A standalone `AI_POLICY.md` is machine-readable. It serves a different purpose than human-oriented documentation.
 
 
+
 ### Why `peaceiris/actions-gh-pages` Was Replaced
 
 
+
 **Decision:** Replaced `peaceiris/actions-gh-pages@v4` with official GitHub Actions
-(`actions/upload-pages-artifact@v3` + `actions/deploy-pages@v4`).
+(`actions/upload-pages-artifact@v5` + `actions/deploy-pages@v5`).
 **Reason:**
 1. `peaceiris` is a third-party action maintained by a single developer. Third-party
    actions in the deploy path are a supply chain risk.
-2. The action emits Node.js 20 deprecation warnings — it is not maintained for Node.js 24.
+2. The action emits Node.js deprecation warnings — it is not maintained for Node.js 24.
 3. The official approach uses scoped permissions (`pages: write` + `id-token: write`)
    instead of broad `contents: write`. This directly enforces the least-privilege principle.
 4. The `gh-pages` branch pattern required the deploy job to have write access to the
@@ -1051,19 +1070,22 @@ Key architectural decisions, why they were made, and what was considered.
 The official GitHub-maintained actions are now the industry standard (2023+).
 
 
-### Why `@types/node` Is Pinned to `20.x`
+
+### Why `@types/node` Must Be Pinned to `22.x`
 
 
-**Decision:** Pin `@types/node` to `20.x` in `packages/config/devDependencies`.
+
+**Decision:** Pin `@types/node` to `22.19.17` in packages that declare it.
 **Reason:** `@types/node` is a dev-only package providing TypeScript definitions for
-Node.js APIs. Upgrading to `22.x` introduces type definitions for APIs that do not
-exist in our Node.js 20 runtime on Render. This causes TypeScript compilation errors
-on valid code. The pin will be lifted when the runtime is upgraded to Node.js 22+.
-**Constraint:** Dependabot is configured to ignore `@types/node` major/minor upgrades.
-Patch updates within `20.x` are allowed.
+Node.js APIs. The version major must match the Node.js runtime major (Node.js 22 on Render).
+Using a higher major introduces type definitions for APIs that do not exist at runtime.
+**Constraint:** Dependabot is configured to ignore `@types/node` major upgrades beyond 22.
+Patch updates within `22.x` are allowed.
+
 
 
 ### Why Exact Versions + Dependabot Is the Correct Combination
+
 
 
 **Decision:** Use exact versions in `package.json` AND configure Dependabot for
@@ -1078,7 +1100,9 @@ The result: no surprise installs, no stale dependencies, no silent drift.
 must come through Dependabot PRs with CI validation.
 
 
+
 ### Why the Dependabot Security Updates UI Toggle Is Disabled
+
 
 **Decision:** Leave "Dependabot security updates" UI toggle disabled in
 GitHub Settings → Security & Analysis.
@@ -1089,32 +1113,37 @@ Explicit configuration in `dependabot.yml` always wins over UI toggles.
 **Constraint:** If `dependabot.yml` is ever removed, re-evaluate this toggle.
 
 
+
 ### Why CodeQL Scans Both `javascript-typescript` and `actions`
 
+
 **Decision:** Run two CodeQL matrix jobs — `javascript-typescript` and `actions`.
-**Reason:** The `actions` scanner (generally available April 2025) detects
-misconfigured GitHub Actions workflows — secret exposure, excessive permissions,
-injection via untrusted input. Since our project's security model is heavily
-workflow-based (6 workflow files), scanning the workflows themselves is as
-important as scanning the application code.
+**Reason:** The `actions` scanner detects misconfigured GitHub Actions workflows —
+secret exposure, excessive permissions, injection via untrusted input. Since our
+project's security model is heavily workflow-based, scanning the workflows themselves
+is as important as scanning the application code.
 **Constraint:** Both matrix entries must be kept. Removing `actions` would leave
 our CI/CD pipeline unanalysed.
 
 
+
 ### Why All Workflows Have Explicit Top-Level Permissions
+
 
 **Decision:** Add `permissions: contents: read` at workflow level to all workflows.
 **Reason:** Without explicit permissions, GitHub Actions falls back to default wide
-permissions which can include `contents: write`. CodeQL (actions scanner) flagged
-this as CWE-275 on `ci.yml`, `deploy-backend.yml`, and `deploy-frontend.yml`.
+permissions which can include `contents: write`. CodeQL flagged this as CWE-275
+on `ci.yml`, `deploy-backend.yml`, and `deploy-frontend.yml`.
 **Rule:** Workflow level sets the safe minimum default. Job level overrides upward
 only when a specific job genuinely needs elevated access (`deploy-frontend.yml`
 deploy job: `pages: write` + `id-token: write`).
 **Constraint:** Every new workflow must declare explicit permissions from the first commit.
-This is now enforced by CodeQL — violations will appear as Medium alerts.
+
 
 
 ### Why `.npmrc` `save-exact=true` Is a Project Constraint
+
+
 
 **Decision:** Add `.npmrc` with `save-exact=true` at monorepo root.
 **Reason:** `npm install` adds `^` by default. This silently violated the
@@ -1128,31 +1157,35 @@ CI conditions. `npm install` uses cached `node_modules` and can mask
 incompatibilities that only surface in CI.
 
 
+
 ### Why `@types/node` Must Never Be Pinned to `x.0.0`
 
-**Decision:** Pin `@types/node` to `20.19.39` (latest stable `20.x` patch).
-**Reason:** `@types/node@20.0.0` is the day-one release of that major version.
-It predates many TypeScript compatibility fixes. Pinning to it caused
-TypeScript 6 compilation errors in `packages/config` — the only package
-that declares `@types/node` as a direct dependency.
-**Rule:** Always pin `@types/node` to the latest patch of the intended major
-(`npm show @types/node@20 version` to check). Dependabot handles future
-patch updates within `20.x` automatically.
+
+
+**Decision:** Pin `@types/node` to the latest patch of the intended major.
+**Reason:** `@types/node@22.0.0` is the day-one release of that major version.
+It predates many TypeScript compatibility fixes. Pinning to it can cause
+TypeScript 6 compilation errors in packages that consume it.
+**Rule:** Always pin `@types/node` to the latest patch of the intended major.
 **Constraint:** Never pin any `@types/*` package to its `.0.0` release.
+
 
 
 ### Why CodeQL Is Not a Merge Gate
 
+
+
 **Decision:** CodeQL runs post-merge, results post to Security tab.
 It is not added to branch protection required status checks.
 **Reason:** CodeQL findings require human review before action — they are
-not binary pass/fail like a build or test. Adding it as a hard gate
-adds 8-10 minutes to every PR for informational output.
-**Revisit when:** API handles real traffic or sensitive data. Adding CodeQL
-to branch protection is a one-minute change in Settings → Branches.
+not binary pass/fail like a build or test.
+**Revisit when:** API handles real traffic or sensitive data.
+
 
 
 ### Why `npm ci` in CI, `npm ci` Locally After Dependency Changes
+
+
 
 **Decision:** CI always uses `npm ci`. Locally, use `npm ci` after any
 dependency version change before committing.
@@ -1160,20 +1193,27 @@ dependency version change before committing.
 incompatibilities that only surface on a clean install. `npm ci` deletes
 `node_modules` and installs exactly from `package-lock.json`, replicating
 CI conditions precisely.
-**Rule:** `npm install` → for adding new packages. `npm ci` → for
-verifying the build is clean before committing.
+**Rule:** `npm install` → for adding new packages. `npm ci` →
+for verifying the build is clean before committing.
+
 
 
 ### Why Helmet Middleware Order Is Non-Negotiable
+
+
 
 **Decision:** `app.use(helmet())` is always the first middleware registered.
 **Reason:** Security headers must be present on every response — including
 CORS rejections, rate limit responses, and 404s. Any middleware registered
 before Helmet can send a response without security headers.
-**Constraint:** Never move Helmet below cors() or any other middleware.
-Order: helmet → cors → limiter → routes.
+**Constraint:** Never move Helmet below any other middleware.
+Order: `helmet()` → `pinoHttp()` → `cors()` → `limiter` → `requireApiKey` → routes.
+
+
 
 ### Why Root `package-lock.json` Triggers Both Deploy Pipelines
+
+
 
 **Decision:** Both `deploy-frontend.yml` and `deploy-backend.yml` include
 `package-lock.json` and root `package.json` in their path filters.
@@ -1181,56 +1221,44 @@ Order: helmet → cors → limiter → routes.
 all dependency versions across the monorepo. If a shared dependency changes,
 both frontend and backend must redeploy against the updated dependency tree.
 Filtering it out risks deploying a frontend or backend built against stale deps.
-**Trade-off:** Occasional unnecessary deploys (e.g. adding a backend-only
-package triggers a frontend redeploy). This is acceptable — GitHub Pages
-deploys are free and fast. Safety over efficiency here.
-**Revisit when:** Monorepo grows large enough that unnecessary deploys have
-a real cost (build time, Render hours, etc.).
+**Trade-off:** Occasional unnecessary deploys are acceptable — safety over efficiency.
+
 
 
 ### Why NODE_ENV Must Never Be Set in the Render Dashboard
 
-**Decision:** `NODE_ENV` must never be set in the Render dashboard environment variables.
 
+
+**Decision:** `NODE_ENV` must never be set in the Render dashboard environment variables.
 **Reason:** Render's `npm ci` install step respects `NODE_ENV`. If set to `production`,
 npm silently skips devDependencies — including `typescript` and `@types/node` — causing
-TypeScript compilation to fail with errors like `husky: not found` and `tsc: not found`.
-`NODE_ENV` is managed exclusively by dotenvx at runtime via `.env.production`.
+TypeScript compilation to fail. `NODE_ENV` is managed exclusively by dotenvx at runtime.
 The build phase must always have full access to devDependencies.
-
-**Why not `--include=dev` as a permanent fix:** This flag installs ALL devDependencies
-onto Render — including eslint, vitest, husky, and lint-staged. These tools have zero
-purpose on a production server and unnecessarily increase the attack surface.
-It compensates for a self-inflicted problem rather than fixing the root cause.
-
 **Correct build command:** `npm ci && npm run build && npm prune --omit=dev`
-
-**Render build context:** Docker multi-stage builds are available on the Render free
-plan and are the professional long-term solution. Deliberately deferred — the current
-`npm prune --omit=dev` pattern achieves the same runtime result without added Dockerfile
-complexity. Revisit during the hardening sprint.
-
 **Constraint:** Never set `NODE_ENV` in the Render dashboard. Never use
 `--include=dev` as a permanent fix.
 
 
+
 ### Why GitHub Actions Are Pinned to Commit SHA
+
+
 
 **Decision:** All `uses:` references in workflow files use full commit SHAs
 instead of mutable version tags.
 **Reason:** Version tags like `@v6` are mutable — a compromised maintainer
 account or supply chain attack can silently retarget the tag to malicious code.
-Your CI runs with `contents: read` access to the entire repo on every push.
 A pinned SHA is immutable — the exact code reviewed is the exact code that runs.
-This is the tj-actions/changed-files attack (March 2025) defense pattern.
 **How pins are maintained:** Dependabot is already configured for the
 `github-actions` ecosystem — it automatically opens PRs when a pinned SHA
-has a newer version available. No manual SHA tracking required.
-**Constraint:** Every new workflow `uses:` reference must be pinned to a
-commit SHA on the first commit. Never merge a workflow using a tag reference.
+has a newer version available.
+**Constraint:** Every new workflow `uses:` reference must be pinned to a commit SHA.
+
 
 
 ### Why Node.js Was Upgraded from 20 to 22
+
+
 
 **Decision:** Upgrade all Node.js version references from 20 to 22 LTS.
 **Reason:** Node.js 20 reached end-of-life in March 2026. Render was already
@@ -1238,25 +1266,28 @@ running Node.js 22.22.0 in production. The project was misaligned — declaring
 Node 20 while the live runtime was Node 22. Aligning to 22 LTS is correct and
 necessary. Node.js 22 LTS security support runs until April 2027.
 **Constraint:** All layers must declare the same Node.js major — Dev Container,
-CI, and @types/node pins. Never let these drift independently again.
-**Revisit when:** Node.js 24 becomes LTS (October 2026).
+CI, and `@types/node` pins. Never let these drift independently again.
+**Revisit when:** Node.js 24 becomes LTS.
+
 
 
 ### Why `@types/node` Must Be Pinned Consistently Across All Monorepo Packages
 
+
+
 **Decision:** Every package that declares `@types/node` must use the same exact
 version — currently `22.19.17` in both `packages/config` and `apps/trading-client`.
-**Reason:** `apps/trading-client` previously drifted to `25.5.0` because the
-constraint was only documented for `packages/config`. A mismatched `@types/node`
-across packages means different packages compile against different Node.js API
-surface — TypeScript will accept calls to APIs that don't exist at runtime.
+**Reason:** A mismatched `@types/node` across packages means different packages
+compile against different Node.js API surface — TypeScript will accept calls to
+APIs that don't exist at runtime.
 **Constraint:** When upgrading Node.js runtime, update ALL `@types/node` pins
 in the same branch. Dependabot ignore list must also be updated in the same commit.
-**How it's enforced:** Dependabot ignore list blocks `23.x`+ globally. Any
-`@types/node` upgrade PR from Dependabot will be within `22.x` only.
+
 
 
 ### Why API Key Auth Uses a Static Shared Secret, Not JWT
+
+
 
 **Decision:** `GET /trades` is protected by a static `API_KEY` shared secret via
 `X-Api-Key` header. JWT was not used.
@@ -1272,6 +1303,8 @@ the key, browser calls the proxy) is the correct long-term fix. Deferred to hard
 **Constraint:** Never use JWT for M2M auth where no user identity exists.
 **Constraint:** `API_KEY` must be set as a secret env var in the Render dashboard.
 Never commit a real key to any env file.
+
+The future auth model is documented in auth_model.md.
 
 
 ---

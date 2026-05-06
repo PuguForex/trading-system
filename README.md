@@ -12,7 +12,7 @@ A full-stack TypeScript monorepo demonstrating production-grade DevSecOps engine
 | Layer | Technology |
 |---|---|
 | Language | TypeScript 6 (strict) |
-| Backend | Express 5, Node 20 |
+| Backend | Express 5, Node 22 |
 | Frontend | Vite 8 |
 | Validation | Zod 4 |
 | Testing | Vitest |

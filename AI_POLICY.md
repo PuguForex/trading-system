@@ -37,10 +37,21 @@
 - Never proceed with architectural changes without reading FOUNDATION.md
 - If SESSION.md and FOUNDATION.md conflict, FOUNDATION.md wins
 
+## Context Capsule
+
+The single re-entry source for this project is `context.txt`. It is the ground truth bundle for session recovery and should be treated as the first file to inspect when context is lost.
+
+IDE agents and assistants must use this capsule as the starting point for recovery, then confirm `SESSION.md`, then `FOUNDATION.md`, then any task-specific policy or workflow instructions.
+
 ## New Topic Protocol
 
 Before implementing any new feature, security control, or configuration change,
 the following must be discussed and agreed upfront in the session.
+
+### 0. READ & SCAN
+- Read the current session context first.
+- Verify the current project state against the latest context bundle.
+- Do not start implementation until documentation gaps and state mismatches are resolved.
 
 ### 1. Impact Analysis
 - Security and safety implications — does it increase or reduce attack surface?

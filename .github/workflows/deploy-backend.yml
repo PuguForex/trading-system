@@ -17,6 +17,7 @@ permissions:
 
 jobs:
   deploy-backend:
+    name: deploy-backend
     runs-on: ubuntu-latest
 
     steps:
