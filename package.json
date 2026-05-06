@@ -42,5 +42,8 @@
     "lint-staged": "16.4.0",
     "rimraf": "6.1.3",
     "typescript-eslint": "8.59.1"
-  }
+  },
+  "overrides": {
+  "ip-address": "10.1.1"
+}
 }
