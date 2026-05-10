@@ -1,80 +1,179 @@
-# SESSION.md — AI Session Bookmark
+# SESSION.md
 
-> **Purpose:** Re-entry point for AI assistants after context loss.
-> Read this file first. Then read FOUNDATION.md for full architecture.
-> Then read AI_POLICY.md for behavioral rules and protocols.
-
----
-
-## Current Position
-
-- **Phase:** Section 9.2 — High Impact, Low Effort Security
-- **Last completed:** `security/pin-actions-to-sha` — all GitHub Actions pinned to commit SHA ✅
-- **Active branch:** none — `main` is clean
+## Purpose
+Preserves short-term working continuity.
+Not a governance document.
+Exists so work can resume safely after interruption.
 
 ---
 
-## What Was Completed This Session (May 2, 2026)
-
-- ✅ `FOUNDATION.md` updated — NODE_ENV constraint, Render build command, workflow_dispatch
-- ✅ `FOUNDATION.md` updated — pino logging marked complete in Section 9.1
-- ✅ `AI_POLICY.md` updated — New Topic Protocol + traceability rules added
-- ✅ All GitHub Actions workflow files pinned to commit SHA
-- ✅ `FOUNDATION.md` updated — SHA pinning decision log + roadmap status
-- ✅ GitHub connector disconnected from Perplexity
-- ⚠️ Node.js runtime mismatch discovered — Render running 22.22.0, project targets 20.x
+## Current Focus
+Phase 4: Safe AI Usage Setup — VS Code AI extension + rules + prompt discipline (FOUNDATION.md §9.2)
 
 ---
 
-## Immediate Next Steps (in order)
-
-### 1. Node.js Runtime Alignment — FIRST
-- Render production is running **Node.js 22.22.0 (default)**
-- Project standard is **Node.js 20** (Dev Container, CI, `@types/node` pin)
-- Decision needed: pin Render to Node.js 20 now, OR upgrade full project to Node.js 22
-- Likely approach: add `engines: { "node": "20.x" }` to root `package.json` + set `NODE_VERSION=20.22.0` in Render dashboard
-- FOUNDATION.md Section 10 decision log entry required
-
-### 2. Auth Enforcement on API Endpoints
-- Add API key validation to `apps/api-service`
-- Requests without valid key get rejected
-
-### 3. Phase 4 — Safe AI Usage Setup
-- VS Code AI extension setup (Copilot or Codeium)
-- Prompt discipline and templates
-- AI workflow integration into Git + CI
+## Completed This Session
+- Node 24 LTS upgrade — all layers aligned in single branch `chore/node24-upgrade`
+  - `.devcontainer/devcontainer.json` → `typescript-node:24`
+  - `.github/workflows/ci.yml` + `deploy-frontend.yml` → `node-version: '24'`
+  - `.github/dependabot.yml` → ignore rule corrected (`>=25`)
+  - `packages/config/tsconfig.json` + `packages/shared-types/tsconfig.json` → `lib: ["ES2020"]` added (lib.dom conflict fix)
+  - `README.md` → Node 24 reference updated
+- Dependabot PR #56 — `codeql-action` SHA bump → merged
+- Dependabot PR #57 — `zod` 4.3.6 → 4.4.2 → merged
+- Dependabot PR #58 — 6 dev deps incl. `@types/node` 24.1.0 → 24.12.2 → merged
 
 ---
 
-## Pinned GitHub Action SHAs (for reference)
-
-| Action | SHA |
-|---|---|
-| `actions/checkout@v6` | `de0fac2e4500dabe0009e67214ff5f5447ce83dd` |
-| `actions/setup-node@v6` | `48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e` |
-| `actions/upload-pages-artifact@v3` | `56afc609e74202658d3ffba0e8f6dda462b719fa` |
-| `actions/deploy-pages@v4` | `d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e` |
-| `github/codeql-action/*@v3` | `53e96ec3b35fce51c141c0d6f0e31028a448722d` |
+## In Progress
+- None
 
 ---
 
-## Re-Entry Protocol for AI Assistants
-
-1. Read this file — get current position
-2. Read `FOUNDATION.md` — get full architecture and constraints
-3. Read `AI_POLICY.md` — get behavioral rules and New Topic Protocol
-4. Never infer project state from training data
-5. If context is unclear, say so explicitly and request these files
+## Blockers
+- None
 
 ---
 
-## Key Constraints (Quick Reference)
+## Decisions Made
+- Node 24 LTS latest takes precedence over all prior version constraints — `FOUNDATION.md §1.3`
+- All packages must be compatible with Node 24 LTS — Dependabot ignore list will need updating (`23.x`+ → `25.x`+)
+- `AI_POLICY.md` + `FOUNDATION.md` are now domain-agnostic templates → reflected in `FOUNDATION.md §12`
 
-- Exact dependency versions only — no `^` or `~`
-- Middleware order: `helmet()` → `cors()` → `limiter` → routes
-- Never touch `.env.secrets`
-- Never set `NODE_ENV` in the Render dashboard — managed by dotenvx at runtime only
-- All workflow `uses:` references must be pinned to commit SHA — never a tag
-- Always sync `FOUNDATION.md` after every architectural change
-- Always sync this file at the start and end of every session
-- New Topic Protocol mandatory — see `AI_POLICY.md`
+---
+
+## Files Touched
+- `AI_POLICY.md` — full rewrite (output this session)
+- `FOUNDATION.md` — full rewrite (output this session)
+- `SESSION.md` — this file
+
+---
+
+## Project File Tree (Categorised Snapshot)
+
+### Governance
+```
+FOUNDATION.md
+AI_POLICY.md
+SESSION.md
+README.md
+```
+
+### Dev Container
+```
+.devcontainer/devcontainer.json
+```
+
+### CI/CD Workflows
+```
+.github/workflows/ci.yml
+.github/workflows/codeql.yml
+.github/workflows/deploy-backend.yml
+.github/workflows/deploy-frontend.yml
+.github/dependabot.yml
+```
+
+### Monorepo Root Config
+```
+package.json
+package-lock.json
+.npmrc
+eslint.config.mjs
+.gitignore
+.gitattributes
+.husky/pre-commit
+.vscode/settings.json
+```
+
+### Env Files
+```
+.env.development
+.env.production
+.env.ci
+.env.example
+```
+
+### AI Access Control
+```
+.aiignore
+.cursorignore
+```
+
+### apps/api-service
+```
+apps/api-service/package.json
+apps/api-service/tsconfig.json
+apps/api-service/src/index.ts
+apps/api-service/src/middleware/auth.ts
+```
+
+### apps/trading-client
+```
+apps/trading-client/package.json
+apps/trading-client/tsconfig.json
+apps/trading-client/src/index.ts
+apps/trading-client/src/models/Summary.ts
+apps/trading-client/src/models/TradeResult.ts
+apps/trading-client/src/services/TradeProcessor.ts
+apps/trading-client/src/services/TradeProcessor.test.ts
+apps/trading-client/src/services/TradeService.ts
+apps/trading-client/src/utils/ReportPrinter.ts
+```
+
+### apps/web-client
+```
+apps/web-client/package.json
+apps/web-client/tsconfig.json
+apps/web-client/vite.config.ts
+apps/web-client/index.html
+apps/web-client/src/main.ts
+apps/web-client/.env.development
+apps/web-client/.gitignore
+```
+
+### packages/config
+```
+packages/config/package.json
+packages/config/tsconfig.json
+packages/config/src/env.ts
+```
+
+### packages/shared-types
+```
+packages/shared-types/package.json
+packages/shared-types/tsconfig.json
+packages/shared-types/src/index.ts
+```
+
+### Tooling Scripts
+```
+context-dump.sh
+context.txt
+```
+
+---
+
+## Next Actions
+1. **Node 24 LTS upgrade** — single branch `chore/node24-upgrade`, touch all layers:
+   - `.devcontainer/devcontainer.json` → image `typescript-node:24`
+   - `.github/workflows/ci.yml` → `node-version: '24'`
+   - `.github/workflows/deploy-frontend.yml` → `node-version: '24'`
+   - `packages/config/package.json` → `@types/node` pin → `24.x` latest stable patch
+   - `apps/trading-client/package.json` → `@types/node` pin if present → same
+   - `.github/dependabot.yml` → update `@types/node` ignore list (`23.x`+ → `25.x`+)
+   - `README.md` → any Node version references
+   - `apps/api-service/package.json`, `apps/trading-client/package.json`, `apps/web-client/package.json` → `engines.node` if present
+   - Run: `npm ci && npm run build && npm run test` → verify clean
+   - PR → CI pass → merge
+2. After Node 24 upgrade merged → Phase 4: Safe AI Usage Setup (`FOUNDATION.md §9.2`)
+3. After Phase 4 → Semgrep SAST in CI (`FOUNDATION.md §9.3`)
+
+---
+
+## Resume Notes
+- `FOUNDATION.md` is source of truth — Node 24 LTS declared but codebase not yet updated
+- All `@types/node` pins must match Node major (`24.x`) — never use `24.0.0`, use latest stable patch
+- Dependabot ignore list currently set to ignore `23.x`+ — must update to `25.x`+ after upgrade
+- [!] Update ALL layers in same branch — Dev Container + CI + `@types/node` drift is the failure pattern
+- [!] Never set `NODE_ENV` in Render dashboard — `FOUNDATION.md §10`
+- Render build command: `npm ci && npm run build && npm prune --omit=dev`
