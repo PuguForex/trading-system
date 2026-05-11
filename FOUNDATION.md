@@ -559,16 +559,16 @@ Headers set by `helmet()` defaults:
 ✔ Node.js runtime upgraded to 24 LTS across all layers
 ✔ @types/node pinned to 24.x across all packages
 ✔ API key auth (X-Api-Key header, 401 on mismatch, middleware at apps/api-service/src/middleware/auth.ts)
+✔ Phase 4: Copilot safe usage setup (devcontainer settings, copilot-instructions.md, AI_POLICY.md Copilot section)
 ```
 
 ### 9.2 Next — High Impact, Low Effort
 ```
-→ Phase 4: Safe AI Usage Setup (VS Code AI extension + rules + prompt discipline)
 ```
 
 ### 9.3 After Phase 4 — Medium Priority
 ```
-→ Semgrep (SAST in CI)
+→ Semgrep (SAST in CI) — deferred; see §10 Decision Log
 → TruffleHog (secret scanning in CI)
 → Dependency Review action on PRs
 → Integration tests (API + client)
@@ -678,6 +678,10 @@ No human users. JWT = user session auth. Static shared secret = correct pattern 
 Browser caveat: `VITE_API_KEY` visible in compiled JS bundle. Accepted for demo scope. Proxy pattern is correct long-term fix — deferred to hardening sprint.
 [!] Never use JWT for M2M auth where no user identity exists.
 [!] `API_KEY` must be secret env var in Render dashboard. Never commit real key.
+
+### Semgrep Deferred — CodeQL Overlap
+CodeQL (`javascript-typescript` + `actions`) already covers core SAST surface for this TypeScript monorepo (§7.9). Semgrep adds tooling overhead without meaningful coverage gap at current project stage.
+Revisit when real traffic or sensitive data exists.
 
 ---
 

@@ -41,6 +41,9 @@ No override. No bypass. No "best effort". Constraints = invariant.
 | MEDIUM | app logic, validation, workflows, deps |
 | HIGH | security, auth, secrets, CI/CD, architecture, deployment, shared contracts |
 
+[!] Governance docs (`FOUNDATION.md`, `AI_POLICY.md`, `SESSION.md`) = HIGH risk regardless of class above.
+[!] "It's just a docs change" is not a valid risk reduction argument.
+
 ---
 
 ## REQUEST CLASSIFICATION
@@ -226,7 +229,10 @@ Architecture Δ → update: `FOUNDATION.md`, `README.md`, `AI_POLICY.md`, workfl
 
 ## NEW TOPIC PROTOCOL
 
-Before implementing any feature, security control, or config Δ — discuss + agree upfront:
+[!] Applies to ALL change types — feature, fix, security, config, refactor, AND docs.
+[!] No exceptions for "it's just a docs change." Governance docs = HIGH risk. See SEVERITY CLASSES.
+
+Before implementing any change — discuss + agree upfront:
 
 1. **Impact** — attack surface Δ? industry-standard? what breaks?
 2. **CI/CD** — workflow touched? new secrets/env vars required?
@@ -314,7 +320,7 @@ All reports require refs. Examples:
 | File | Update When |
 |------|-------------|
 | `FOUNDATION.md` | architecture / goals / constraints / decisions Δ |
-| `AI_POLICY.md` | AI permissions / restrictions / access boundaries Δ |
+| `AI_POLICY.md` | AI permissions / restrictions / access boundaries / writing rules Δ |
 | `AI-EXECUTION-PROTOCOL.md` | request flow / risk classes / stop rules Δ |
 | `SESSION.md` | focus Δ / new blocker / short-term decision / continuity |
 

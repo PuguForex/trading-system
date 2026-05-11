@@ -8,20 +8,14 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
-Phase 4: Safe AI Usage Setup — VS Code AI extension + rules + prompt discipline (FOUNDATION.md §9.2)
-
----
+TruffleHog + Dependency Review action (FOUNDATION.md §9.3)
 
 ## Completed This Session
-- Node 24 LTS upgrade — all layers aligned in single branch `chore/node24-upgrade`
-  - `.devcontainer/devcontainer.json` → `typescript-node:24`
-  - `.github/workflows/ci.yml` + `deploy-frontend.yml` → `node-version: '24'`
-  - `.github/dependabot.yml` → ignore rule corrected (`>=25`)
-  - `packages/config/tsconfig.json` + `packages/shared-types/tsconfig.json` → `lib: ["ES2020"]` added (lib.dom conflict fix)
-  - `README.md` → Node 24 reference updated
-- Dependabot PR #56 — `codeql-action` SHA bump → merged
-- Dependabot PR #57 — `zod` 4.3.6 → 4.4.2 → merged
-- Dependabot PR #58 — 6 dev deps incl. `@types/node` 24.1.0 → 24.12.2 → merged
+✔ Phase 4: Safe AI Usage Setup
+  - devcontainer.json → Copilot settings (plaintext/markdown disabled)
+  - .github/copilot-instructions.md → created
+  - AI_POLICY.md → ## COPILOT section added
+✔ Semgrep priority assessed — deferred, CodeQL overlap documented in FOUNDATION.md §9.3
 
 ---
 
