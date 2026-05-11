@@ -114,11 +114,11 @@ Verify all script names, file paths, commands verbatim from context. [?] not fou
 [!] No articles (a, an, the).
 
 Symbol logic — mandatory in all applicable output:
-- `[→]` = leads to / results in
-- `[Δ]` = change / update
 - `[!]` = critical / must not violate
-- `[+]` = add / benefit
 - `[?]` = condition / if
+- `[+]` = add / benefit
+- `→` = leads to / results in
+- `Δ` = change / update
 
 Shorthand — always use: `auth` `db` `config` `deps` `env` `async` `infra` `CI` `CD`
 Max density: 1 line per concept. No multi-sentence explanations unless HIGH report level.
@@ -224,6 +224,7 @@ clean install → build → CI → deploy → runtime boot → env loading → A
 ### Phase 12 — Documentation Reflection
 Architecture Δ → update: `FOUNDATION.md`, `README.md`, `AI_POLICY.md`, workflows, decision logs.
 [!] code/doc divergence → stop
+[!] Cross-check `SESSION.md → Files Touched` against every file created or modified in branch — do not rely on memory. Verify from branch diff.
 
 ---
 
@@ -322,7 +323,24 @@ All reports require refs. Examples:
 | `FOUNDATION.md` | architecture / goals / constraints / decisions Δ |
 | `AI_POLICY.md` | AI permissions / restrictions / access boundaries / writing rules Δ |
 | `AI-EXECUTION-PROTOCOL.md` | request flow / risk classes / stop rules Δ |
-| `SESSION.md` | focus Δ / new blocker / short-term decision / continuity |
+| `SESSION.md` | After every session with meaningful work — update ALL sections listed below. Omit only sections with zero change. Partial update = policy violation. |
+
+### SESSION.md — Required Sections (all in scope by default)
+
+| Section | Update When |
+|---|---|
+| Current Focus | active task Δ |
+| Completed This Session | any work completed |
+| In Progress | any task started but not finished |
+| Blockers | blocker added or resolved |
+| Decisions Made | any short-term decision — including deferrals |
+| Files Touched | [!] every file created or modified — cross-check against branch diff, not memory |
+| Project File Tree | new file added or file deleted |
+| Next Actions | ordering Δ / item completed / new item added |
+| Resume Notes | any stale context must be removed; new critical context added |
+
+[!] Omitting a section requires explicit justification in the SESSION.md update itself.
+[!] "No changes" is only valid if verified — not assumed.
 
 ---
 
