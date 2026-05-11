@@ -1,6 +1,9 @@
 {
   "name": "config",
   "version": "1.0.0",
+"engines": {
+  "node": ">=24.0.0 <25.0.0"
+},
   "main": "dist/env.js",
   "types": "dist/env.d.ts",
   "scripts": {
