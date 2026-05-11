@@ -1,6 +1,9 @@
 {
   "name": "shared-types",
   "version": "1.0.0",
+"engines": {
+  "node": ">=24.0.0 <25.0.0"
+},
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
