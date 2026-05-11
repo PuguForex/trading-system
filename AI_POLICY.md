@@ -327,3 +327,25 @@ understand existing system → before → changing existing system
 working code ≠ strong engineering
 AI → constrained engineering steward, not unrestricted generator
 ```
+
+## COPILOT
+
+### Permitted
+- Inline completions: TypeScript, JavaScript source files in `apps/` and `packages/`
+- Chat: discuss, propose, review modes
+- Code suggestions within feature branches only
+
+### Blocked
+[!] No completions in: `FOUNDATION.md`, `AI_POLICY.md`, `SESSION.md`, `*.yml`, `*.json` config files
+[!] No suggestions touching: middleware order, auth logic, env loading, secrets gate
+[!] No suggestions accepted without diff review — treat as untrusted input
+
+### Prompt Discipline
+[!] Every prompt must include: scope + file + constraint reference
+[!] Never open-ended delegation — "implement X" without context = rejected prompt
+[!] Copilot output → feature branch → diff review → CI gate → merge. No exceptions.
+
+### Git + CI Integration
+[!] AI-generated code follows identical workflow to human code
+[!] CI (lint → audit → build → test) is truth gate regardless of AI involvement
+[!] No direct main commits from AI output
