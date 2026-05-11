@@ -691,6 +691,13 @@ Node version belongs in repo — versioned, reviewed, CI-enforced, Render-respec
 [!] `@types/node` patch = `engines.node` = `.nvmrc` — all three must match exactly.
 [!] Node major upgrade → update `.nvmrc` + all `engines` pins + CI `node-version` + `@types/node` in same branch.
 
+### `engines.node` Uses Range, Not Exact Patch
+`engines` is a runtime compatibility declaration, not a dep version. Node runtime patch and `@types/node` patch release on independent schedules — exact patch pinning causes permanent `EBADENGINE` drift.
+Correct: `">=24.0.0 <25.0.0"` — enforces Node 24, Dependabot manages `@types/node` patch independently.
+[!] `§4.3` exact versions policy applies to npm packages only — not runtime declarations.
+[!] Node major upgrade → update `engines` range + `.nvmrc` + CI `node-version` + `@types/node` ignore list in same branch.
+[!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
+
 ---
 
 ## 11. Intentionally Deferred

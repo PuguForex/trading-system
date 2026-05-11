@@ -180,6 +180,7 @@ apps → packages; packages ↛ apps
 real problem?                NO  → stop
 premature optimization?      YES → stop
 existing tooling sufficient? YES → stop
+proposed solution → sustainable under automated dep updates (Dependabot)? NO → stop
 ```
 
 ### Phase 7 — Build Sequence Validation
