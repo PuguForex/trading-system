@@ -8,27 +8,31 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
-`AI_POLICY.md` + `SESSION.md` policy gap remediation — complete.
+TruffleHog (secret scanning in CI) — next DevSecOps hardening step.
 
 ---
 
 ## Completed This Session
-- Node 24 LTS upgrade — all layers aligned (Dev Container, CI, `@types/node`, Dependabot ignore list)
-- Phase 4: Safe AI Usage Setup
-  - `.devcontainer/devcontainer.json` → Copilot settings added (plaintext/markdown completions disabled)
-  - `.github/copilot-instructions.md` → created
-  - `AI_POLICY.md` → `## COPILOT` section added
-- Semgrep priority assessed — deferred; CodeQL covers core TS/JS SAST surface; logged in `FOUNDATION.md §10`
-- `FOUNDATION.md §9.3` updated — Semgrep marked deferred with §10 reference
-- `AI_POLICY.md` policy gaps remediated:
-  - Governance docs = HIGH risk (SEVERITY CLASSES)
-  - COMMAND EXECUTION RULES section added
-  - DOCUMENTATION WRITING RULES section added (symbol notation, shorthand, density)
-  - Phase 12 — cross-check `FILES TOUCHED` against branch diff, not memory
-  - DOC UPDATE TRIGGERS — all SESSION.md sections named explicitly
-  - COPILOT section added
-  - REPORT LEVELS restored as subsection of REPORTING LAW
-  - Symbol notation corrected (`→` `Δ` not `[→]` `[Δ]`)
+- `chore/node-version-cac` completed and merged.
+- Node version policy cleaned up:
+  - `.nvmrc` uses `24`
+  - `engines.node` uses `">=24.0.0 <25.0.0"`
+  - exact patch pinning rejected as unsustainable under Dependabot
+  - `NODE_VERSION` in Render dashboard rejected as CaC violation
+- LOCAL VERIFICATION completed cleanly:
+  - `npm ci`
+  - `npm run build`
+  - `npm run dev:api`
+  - `curl` no key → 401
+  - `curl` with key → data returned
+  - `npm run dev:web`
+  - `npm run test`
+  - `npm run lint`
+- Docs updated for Node policy and policy-gate lessons:
+  - `FOUNDATION.md §7.3`
+  - `FOUNDATION.md §10`
+  - `AI_POLICY.md Phase 6`
+- DevSecOps assessment completed: current infrastructure rated 8.5/10.
 
 ---
 
@@ -43,25 +47,32 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Decisions Made
-- Semgrep deferred — CodeQL (`javascript-typescript` + `actions`) covers core SAST surface for TS monorepo. Revisit when real traffic or sensitive data exists. → `FOUNDATION.md §10`
-- `AI_POLICY.md` SESSION.md update rule was too narrow — partial update = policy violation, now explicit
-- Symbol notation: `→` and `Δ` used without brackets throughout; `[→]` `[Δ]` removed from symbol legend
+- `engines.node` must use a major compatibility range, not an exact patch.
+- `.nvmrc` stays at Node major only for this repo.
+- `@types/node` patch updates are independent from runtime patch updates.
+- `NODE_VERSION` in Render dashboard must not be used.
+- Proposed solutions must be evaluated for sustainability under automated dependency updates before suggesting them.
 
 ---
 
 ## Files Touched
-- `FOUNDATION.md` — §9.3 Semgrep marked deferred; §10 Semgrep deferral decision added
-- `AI_POLICY.md` — multiple policy gaps fixed (see Completed above)
-- `SESSION.md` — this file
-- `.devcontainer/devcontainer.json` — Copilot settings added (Phase 4)
-- `.github/copilot-instructions.md` — new file (Phase 4)
+- `FOUNDATION.md` — Node version policy entries added.
+- `AI_POLICY.md` — Dependabot sustainability rule added.
+- `SESSION.md` — this file.
+- `.nvmrc` — Node major pin exists.
+- `package.json` — `engines` updated on branch.
+- `apps/api-service/package.json` — `engines` updated on branch.
+- `apps/trading-client/package.json` — `engines` updated on branch.
+- `apps/web-client/package.json` — `engines` updated on branch.
+- `packages/config/package.json` — `engines` updated on branch.
+- `packages/shared-types/package.json` — `engines` updated on branch.
 
 ---
 
 ## Project File Tree (Categorised Snapshot)
 
 ### Governance
-```
+```text
 FOUNDATION.md
 AI_POLICY.md
 SESSION.md
@@ -69,12 +80,12 @@ README.md
 ```
 
 ### Dev Container
-```
+```text
 .devcontainer/devcontainer.json
 ```
 
 ### CI/CD Workflows
-```
+```text
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
 .github/workflows/deploy-backend.yml
@@ -83,17 +94,18 @@ README.md
 ```
 
 ### AI Access Control
-```
+```text
 .aiignore
 .cursorignore
 .github/copilot-instructions.md
 ```
 
 ### Monorepo Root Config
-```
+```text
 package.json
 package-lock.json
 .npmrc
+.nvmrc
 eslint.config.mjs
 .gitignore
 .gitattributes
@@ -102,7 +114,7 @@ eslint.config.mjs
 ```
 
 ### Env Files
-```
+```text
 .env.development
 .env.production
 .env.ci
@@ -110,7 +122,7 @@ eslint.config.mjs
 ```
 
 ### apps/api-service
-```
+```text
 apps/api-service/package.json
 apps/api-service/tsconfig.json
 apps/api-service/src/index.ts
@@ -118,7 +130,7 @@ apps/api-service/src/middleware/auth.ts
 ```
 
 ### apps/trading-client
-```
+```text
 apps/trading-client/package.json
 apps/trading-client/tsconfig.json
 apps/trading-client/src/index.ts
@@ -131,7 +143,7 @@ apps/trading-client/src/utils/ReportPrinter.ts
 ```
 
 ### apps/web-client
-```
+```text
 apps/web-client/package.json
 apps/web-client/tsconfig.json
 apps/web-client/vite.config.ts
@@ -142,21 +154,21 @@ apps/web-client/.gitignore
 ```
 
 ### packages/config
-```
+```text
 packages/config/package.json
 packages/config/tsconfig.json
 packages/config/src/env.ts
 ```
 
 ### packages/shared-types
-```
+```text
 packages/shared-types/package.json
 packages/shared-types/tsconfig.json
 packages/shared-types/src/index.ts
 ```
 
 ### Tooling Scripts
-```
+```text
 context-dump.sh
 context.txt
 ```
@@ -172,9 +184,9 @@ context.txt
 ---
 
 ## Resume Notes
-- Node 24 LTS upgrade complete — all layers aligned
-- Phase 4 (Safe AI Usage) complete — Copilot contained, policy updated
-- Semgrep deferred — documented, not forgotten — `FOUNDATION.md §10`
-- Next = TruffleHog (`FOUNDATION.md §9.3`) — distinct from CodeQL, high unique value
-- [!] All commands from monorepo root — `AI_POLICY.md` COMMAND EXECUTION RULES
-- [!] Governance docs (`FOUNDATION.md`, `AI_POLICY.md`, `SESSION.md`) = HIGH risk — no silent edits
+- Node version policy is now CaC-aligned: repo controls runtime compatibility, dashboard does not.
+- `npm ci` and `npm run build` passed before merge.
+- `dev:api`, `dev:web`, `test`, and `lint` passed during LOCAL VERIFICATION.
+- Semgrep remains deferred in `FOUNDATION.md §10`.
+- [!] Any future docs update must cross-check `SESSION.md → Files Touched` against branch diff.
+- [!] Governance docs are HIGH risk — update carefully, with explicit evidence.
