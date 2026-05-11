@@ -8,14 +8,27 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
-TruffleHog + Dependency Review action (FOUNDATION.md §9.3)
+`AI_POLICY.md` + `SESSION.md` policy gap remediation — complete.
+
+---
 
 ## Completed This Session
-✔ Phase 4: Safe AI Usage Setup
-  - devcontainer.json → Copilot settings (plaintext/markdown disabled)
-  - .github/copilot-instructions.md → created
-  - AI_POLICY.md → ## COPILOT section added
-✔ Semgrep priority assessed — deferred, CodeQL overlap documented in FOUNDATION.md §9.3
+- Node 24 LTS upgrade — all layers aligned (Dev Container, CI, `@types/node`, Dependabot ignore list)
+- Phase 4: Safe AI Usage Setup
+  - `.devcontainer/devcontainer.json` → Copilot settings added (plaintext/markdown completions disabled)
+  - `.github/copilot-instructions.md` → created
+  - `AI_POLICY.md` → `## COPILOT` section added
+- Semgrep priority assessed — deferred; CodeQL covers core TS/JS SAST surface; logged in `FOUNDATION.md §10`
+- `FOUNDATION.md §9.3` updated — Semgrep marked deferred with §10 reference
+- `AI_POLICY.md` policy gaps remediated:
+  - Governance docs = HIGH risk (SEVERITY CLASSES)
+  - COMMAND EXECUTION RULES section added
+  - DOCUMENTATION WRITING RULES section added (symbol notation, shorthand, density)
+  - Phase 12 — cross-check `FILES TOUCHED` against branch diff, not memory
+  - DOC UPDATE TRIGGERS — all SESSION.md sections named explicitly
+  - COPILOT section added
+  - REPORT LEVELS restored as subsection of REPORTING LAW
+  - Symbol notation corrected (`→` `Δ` not `[→]` `[Δ]`)
 
 ---
 
@@ -30,16 +43,18 @@ TruffleHog + Dependency Review action (FOUNDATION.md §9.3)
 ---
 
 ## Decisions Made
-- Node 24 LTS latest takes precedence over all prior version constraints — `FOUNDATION.md §1.3`
-- All packages must be compatible with Node 24 LTS — Dependabot ignore list will need updating (`23.x`+ → `25.x`+)
-- `AI_POLICY.md` + `FOUNDATION.md` are now domain-agnostic templates → reflected in `FOUNDATION.md §12`
+- Semgrep deferred — CodeQL (`javascript-typescript` + `actions`) covers core SAST surface for TS monorepo. Revisit when real traffic or sensitive data exists. → `FOUNDATION.md §10`
+- `AI_POLICY.md` SESSION.md update rule was too narrow — partial update = policy violation, now explicit
+- Symbol notation: `→` and `Δ` used without brackets throughout; `[→]` `[Δ]` removed from symbol legend
 
 ---
 
 ## Files Touched
-- `AI_POLICY.md` — full rewrite (output this session)
-- `FOUNDATION.md` — full rewrite (output this session)
+- `FOUNDATION.md` — §9.3 Semgrep marked deferred; §10 Semgrep deferral decision added
+- `AI_POLICY.md` — multiple policy gaps fixed (see Completed above)
 - `SESSION.md` — this file
+- `.devcontainer/devcontainer.json` — Copilot settings added (Phase 4)
+- `.github/copilot-instructions.md` — new file (Phase 4)
 
 ---
 
@@ -67,6 +82,13 @@ README.md
 .github/dependabot.yml
 ```
 
+### AI Access Control
+```
+.aiignore
+.cursorignore
+.github/copilot-instructions.md
+```
+
 ### Monorepo Root Config
 ```
 package.json
@@ -85,12 +107,6 @@ eslint.config.mjs
 .env.production
 .env.ci
 .env.example
-```
-
-### AI Access Control
-```
-.aiignore
-.cursorignore
 ```
 
 ### apps/api-service
@@ -148,26 +164,17 @@ context.txt
 ---
 
 ## Next Actions
-1. **Node 24 LTS upgrade** — single branch `chore/node24-upgrade`, touch all layers:
-   - `.devcontainer/devcontainer.json` → image `typescript-node:24`
-   - `.github/workflows/ci.yml` → `node-version: '24'`
-   - `.github/workflows/deploy-frontend.yml` → `node-version: '24'`
-   - `packages/config/package.json` → `@types/node` pin → `24.x` latest stable patch
-   - `apps/trading-client/package.json` → `@types/node` pin if present → same
-   - `.github/dependabot.yml` → update `@types/node` ignore list (`23.x`+ → `25.x`+)
-   - `README.md` → any Node version references
-   - `apps/api-service/package.json`, `apps/trading-client/package.json`, `apps/web-client/package.json` → `engines.node` if present
-   - Run: `npm ci && npm run build && npm run test` → verify clean
-   - PR → CI pass → merge
-2. After Node 24 upgrade merged → Phase 4: Safe AI Usage Setup (`FOUNDATION.md §9.2`)
-3. After Phase 4 → Semgrep SAST in CI (`FOUNDATION.md §9.3`)
+1. TruffleHog (secret scanning in CI) — `FOUNDATION.md §9.3`
+2. Dependency Review action on PRs — `FOUNDATION.md §9.3`
+3. Integration tests (API + client) — `FOUNDATION.md §9.3`
+4. Prettier enforcement — `FOUNDATION.md §9.3`
 
 ---
 
 ## Resume Notes
-- `FOUNDATION.md` is source of truth — Node 24 LTS declared but codebase not yet updated
-- All `@types/node` pins must match Node major (`24.x`) — never use `24.0.0`, use latest stable patch
-- Dependabot ignore list currently set to ignore `23.x`+ — must update to `25.x`+ after upgrade
-- [!] Update ALL layers in same branch — Dev Container + CI + `@types/node` drift is the failure pattern
-- [!] Never set `NODE_ENV` in Render dashboard — `FOUNDATION.md §10`
-- Render build command: `npm ci && npm run build && npm prune --omit=dev`
+- Node 24 LTS upgrade complete — all layers aligned
+- Phase 4 (Safe AI Usage) complete — Copilot contained, policy updated
+- Semgrep deferred — documented, not forgotten — `FOUNDATION.md §10`
+- Next = TruffleHog (`FOUNDATION.md §9.3`) — distinct from CodeQL, high unique value
+- [!] All commands from monorepo root — `AI_POLICY.md` COMMAND EXECUTION RULES
+- [!] Governance docs (`FOUNDATION.md`, `AI_POLICY.md`, `SESSION.md`) = HIGH risk — no silent edits
