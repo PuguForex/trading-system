@@ -371,6 +371,7 @@ Step: curl --fail --silent --show-error -X POST $RENDER_DEPLOY_HOOK_URL
 Build command (Render): `npm ci && npm run build && npm prune --omit=dev`
 [!] Never use `--include=dev` as permanent fix. Never set `NODE_ENV` in Render dashboard — see §10.
 [!] Never re-enable Render auto-deploy. All deploys must be triggered from GitHub Actions.
+[!] Never set `NODE_VERSION` in Render dashboard — `.nvmrc` + `engines` control version via git.
 
 ### 7.4 GitHub Actions IAM
 
@@ -682,6 +683,20 @@ Browser caveat: `VITE_API_KEY` visible in compiled JS bundle. Accepted for demo 
 ### Semgrep Deferred — CodeQL Overlap
 CodeQL (`javascript-typescript` + `actions`) already covers core SAST surface for this TypeScript monorepo (§7.9). Semgrep adds tooling overhead without meaningful coverage gap at current project stage.
 Revisit when real traffic or sensitive data exists.
+
+### Node Version Pinned via `.nvmrc` + `engines`
+Node version belongs in repo — versioned, reviewed, CI-enforced, Render-respected.
+`.nvmrc` → consumed by Render, nvm, Dev Container. `engines.node` → enforced by `npm ci` + tooling.
+[!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
+[!] `@types/node` patch = `engines.node` = `.nvmrc` — all three must match exactly.
+[!] Node major upgrade → update `.nvmrc` + all `engines` pins + CI `node-version` + `@types/node` in same branch.
+
+### `engines.node` Uses Range, Not Exact Patch
+`engines` is a runtime compatibility declaration, not a dep version. Node runtime patch and `@types/node` patch release on independent schedules — exact patch pinning causes permanent `EBADENGINE` drift.
+Correct: `">=24.0.0 <25.0.0"` — enforces Node 24, Dependabot manages `@types/node` patch independently.
+[!] `§4.3` exact versions policy applies to npm packages only — not runtime declarations.
+[!] Node major upgrade → update `engines` range + `.nvmrc` + CI `node-version` + `@types/node` ignore list in same branch.
+[!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
 
 ---
 
