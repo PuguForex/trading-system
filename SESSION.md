@@ -8,31 +8,18 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
-TruffleHog (secret scanning in CI) — next DevSecOps hardening step.
+Dependency Review action on PRs — next DevSecOps hardening step.
 
 ---
 
 ## Completed This Session
 - `chore/node-version-cac` completed and merged.
-- Node version policy cleaned up:
-  - `.nvmrc` uses `24`
-  - `engines.node` uses `">=24.0.0 <25.0.0"`
-  - exact patch pinning rejected as unsustainable under Dependabot
-  - `NODE_VERSION` in Render dashboard rejected as CaC violation
-- LOCAL VERIFICATION completed cleanly:
-  - `npm ci`
-  - `npm run build`
-  - `npm run dev:api`
-  - `curl` no key → 401
-  - `curl` with key → data returned
-  - `npm run dev:web`
-  - `npm run test`
-  - `npm run lint`
-- Docs updated for Node policy and policy-gate lessons:
-  - `FOUNDATION.md §7.3`
-  - `FOUNDATION.md §10`
-  - `AI_POLICY.md Phase 6`
-- DevSecOps assessment completed: current infrastructure rated 8.5/10.
+- Node version policy cleaned up.
+- TruffleHog secret scanning added:
+  - `.github/workflows/trufflehog.yml` created
+  - PR diff only, `--only-verified`
+  - Action SHA pinned + `version: 3.95.3` Docker image pinned
+  - Scanned clean: 0 verified secrets, 0 unverified secrets
 
 ---
 
@@ -52,20 +39,16 @@ TruffleHog (secret scanning in CI) — next DevSecOps hardening step.
 - `@types/node` patch updates are independent from runtime patch updates.
 - `NODE_VERSION` in Render dashboard must not be used.
 - Proposed solutions must be evaluated for sustainability under automated dependency updates before suggesting them.
+- TruffleHog scans PR diff only — full history is a one-time audit concern, not a CI gate.
+- TruffleHog lives in its own workflow — separate from ci.yml.
+- TruffleHog requires two pins: action SHA (`uses:`) + Docker image (`version:`).
 
 ---
 
 ## Files Touched
-- `FOUNDATION.md` — Node version policy entries added.
-- `AI_POLICY.md` — Dependabot sustainability rule added.
+- `FOUNDATION.md` — TruffleHog added to §9.1 and §10.
 - `SESSION.md` — this file.
-- `.nvmrc` — Node major pin exists.
-- `package.json` — `engines` updated on branch.
-- `apps/api-service/package.json` — `engines` updated on branch.
-- `apps/trading-client/package.json` — `engines` updated on branch.
-- `apps/web-client/package.json` — `engines` updated on branch.
-- `packages/config/package.json` — `engines` updated on branch.
-- `packages/shared-types/package.json` — `engines` updated on branch.
+- `.github/workflows/trufflehog.yml` — created.
 
 ---
 
@@ -88,6 +71,7 @@ README.md
 ```text
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
+.github/workflows/trufflehog.yml
 .github/workflows/deploy-backend.yml
 .github/workflows/deploy-frontend.yml
 .github/dependabot.yml
@@ -176,17 +160,16 @@ context.txt
 ---
 
 ## Next Actions
-1. TruffleHog (secret scanning in CI) — `FOUNDATION.md §9.3`
-2. Dependency Review action on PRs — `FOUNDATION.md §9.3`
-3. Integration tests (API + client) — `FOUNDATION.md §9.3`
-4. Prettier enforcement — `FOUNDATION.md §9.3`
+1. Dependency Review action on PRs — `FOUNDATION.md §9.3`
+2. Integration tests — `FOUNDATION.md §9.3`
+3. Prettier enforcement — `FOUNDATION.md §9.3`
 
 ---
 
 ## Resume Notes
-- Node version policy is now CaC-aligned: repo controls runtime compatibility, dashboard does not.
-- `npm ci` and `npm run build` passed before merge.
-- `dev:api`, `dev:web`, `test`, and `lint` passed during LOCAL VERIFICATION.
+- Node version policy is CaC-aligned and merged.
+- TruffleHog is live — scans every PR diff, pinned to v3.95.3.
+- TruffleHog requires two pins: `uses:` SHA and `version:` in `with:`.
 - Semgrep remains deferred in `FOUNDATION.md §10`.
 - [!] Any future docs update must cross-check `SESSION.md → Files Touched` against branch diff.
 - [!] Governance docs are HIGH risk — update carefully, with explicit evidence.
