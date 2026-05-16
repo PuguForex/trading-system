@@ -561,6 +561,7 @@ Headers set by `helmet()` defaults:
 ✔ @types/node pinned to 24.x across all packages
 ✔ API key auth (X-Api-Key header, 401 on mismatch, middleware at apps/api-service/src/middleware/auth.ts)
 ✔ Phase 4: Copilot safe usage setup (devcontainer settings, copilot-instructions.md, AI_POLICY.md Copilot section)
+✔ TruffleHog secret scanning — trufflehog.yml, PR diff only, --only-verified, SHA + version pinned
 ```
 
 ### 9.2 Next — High Impact, Low Effort
@@ -570,7 +571,6 @@ Headers set by `helmet()` defaults:
 ### 9.3 After Phase 4 — Medium Priority
 ```
 → Semgrep (SAST in CI) — deferred; see §10 Decision Log
-→ TruffleHog (secret scanning in CI)
 → Dependency Review action on PRs
 → Integration tests (API + client)
 → Prettier enforcement
@@ -697,6 +697,20 @@ Correct: `">=24.0.0 <25.0.0"` — enforces Node 24, Dependabot manages `@types/n
 [!] `§4.3` exact versions policy applies to npm packages only — not runtime declarations.
 [!] Node major upgrade → update `engines` range + `.nvmrc` + CI `node-version` + `@types/node` ignore list in same branch.
 [!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
+
+### TruffleHog: PR diff only, not full history
+Full history scans are slow and better suited as a one-time audit.
+CI gate scans the diff between base and head on every PR.
+--only-verified reduces false positives to confirmed live secrets only.
+
+### TruffleHog: separate workflow, not added to ci.yml
+Secret scanning has independent permissions, trigger, and failure behavior.
+Isolation keeps ci.yml focused on build/test concerns.
+
+### TruffleHog: two pins required
+uses: SHA pins the action code (action.yml shell script).
+version: 3.95.3 in with: pins the Docker image pulled at runtime.
+SHA pin alone does not pin the Docker image — both are required.
 
 ---
 
