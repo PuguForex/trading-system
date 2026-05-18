@@ -8,7 +8,7 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
-Dependency Review action on PRs — next DevSecOps hardening step.
+Dependency Review action on PRs — implemented in `.github/workflows/dependency-review.yml`.
 
 ---
 
@@ -16,6 +16,7 @@ Dependency Review action on PRs — next DevSecOps hardening step.
 - PR #66 merged: `github/codeql-action` bump reviewed and approved.
 - PR #67 merged: `express-rate-limit` bump reviewed and approved.
 - PR #68 merged: dev-dependencies group reviewed and approved, including `@types/node 24.12.4`.
+- Dependency Review workflow implemented in `.github/workflows/dependency-review.yml`.
 
 ---
 
@@ -32,17 +33,17 @@ Dependency Review action on PRs — next DevSecOps hardening step.
 ## Decisions Made
 - Dependabot batch approved: #66, #67, #68.
 - `@types/node` patch bump remains within `24.x` policy.
+- Dependency Review workflow uses `pull_request` trigger with SHA-pinned GitHub Actions.
 
 ---
 
 ## Files Touched
 - `SESSION.md` — Dependabot batch completion recorded.
-- `FOUNDATION.md` — no content change required for this batch.
+- `.github/workflows/dependency-review.yml` — PR dependency review gate added.
 
 ---
 
 ## Project File Tree (Categorised Snapshot)
-
 ### Governance
 ```text
 FOUNDATION.md
@@ -63,6 +64,7 @@ README.md
 .github/workflows/trufflehog.yml
 .github/workflows/deploy-backend.yml
 .github/workflows/deploy-frontend.yml
+.github/workflows/dependency-review.yml
 .github/dependabot.yml
 ```
 
@@ -149,9 +151,9 @@ context.txt
 ---
 
 ## Next Actions
-1. Dependency Review action on PRs — `FOUNDATION.md §9.3`.
-2. Integration tests — `FOUNDATION.md §9.3`.
-3. Prettier enforcement — `FOUNDATION.md §9.3`.
+1. Integration tests — `FOUNDATION.md §9.3`.
+2. Prettier enforcement — `FOUNDATION.md §9.3`.
+3. Dependency Review action merged and validated in CI.
 
 ---
 
