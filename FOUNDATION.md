@@ -587,6 +587,7 @@ Headers set by `helmet()` defaults:
 → Nx or Turborepo (when build times justify)
 → React or advanced frontend
 → Docker production multi-stage build
+→ Artifact attestations / provenance / build signing
 ```
 
 ---
@@ -711,6 +712,9 @@ Isolation keeps ci.yml focused on build/test concerns.
 uses: SHA pins the action code (action.yml shell script).
 version: 3.95.3 in with: pins the Docker image pulled at runtime.
 SHA pin alone does not pin the Docker image — both are required.
+
+### Artifact Attestations / Provenance / Build Signing
+Deferred until release-chain need exists. Keep as future hardening item, not current scope.
 
 ---
 

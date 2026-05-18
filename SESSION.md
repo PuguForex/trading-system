@@ -42,11 +42,12 @@ Dependency Review action on PRs — next DevSecOps hardening step.
 - TruffleHog scans PR diff only — full history is a one-time audit concern, not a CI gate.
 - TruffleHog lives in its own workflow — separate from ci.yml.
 - TruffleHog requires two pins: action SHA (`uses:`) + Docker image (`version:`).
+- Artifact attestations / provenance / build signing deferred until release-chain need exists.
 
 ---
 
 ## Files Touched
-- `FOUNDATION.md` — TruffleHog added to §9.1 and §10.
+- `FOUNDATION.md` — future hardening roadmap updated with artifact attestations / provenance / build signing.
 - `SESSION.md` — this file.
 - `.github/workflows/trufflehog.yml` — created.
 
