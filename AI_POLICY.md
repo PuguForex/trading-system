@@ -123,6 +123,9 @@ Symbol logic — mandatory in all applicable output:
 Shorthand — always use: `auth` `db` `config` `deps` `env` `async` `infra` `CI` `CD`
 Max density: 1 line per concept. No multi-sentence explanations unless HIGH report level.
 
+[!] Proposed changes to any file → output in exact target file format,
+    copy-paste ready clean fenced code block. No prose descriptions of what to change.
+
 ---
 
 ## PROTECTED FILES
