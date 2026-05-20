@@ -613,6 +613,8 @@ Headers set by `helmet()` defaults:
 ✔ API key auth (X-Api-Key header, 401 on mismatch, middleware at apps/api-service/src/middleware/auth.ts)
 ✔ Phase 4: Copilot safe usage setup (devcontainer settings, copilot-instructions.md, AI_POLICY.md Copilot section)
 ✔ TruffleHog secret scanning — trufflehog.yml, PR diff only, --only-verified, SHA + version pinned
+✔ Dependency Review action on PRs (`.github/workflows/dependency-review.yml`)
+✔ Prettier enforcement implemented without CI
 ```
 
 ### 9.2 Next — High Impact, Low Effort
@@ -625,9 +627,8 @@ Headers set by `helmet()` defaults:
 
 ```
 → Semgrep (SAST in CI) — deferred; see §10 Decision Log
-→ Dependency Review action on PRs
 → Integration tests (API + client)
-→ Prettier enforcement
+→ Prettier enforcement with CI
 ```
 
 ### 9.4 Future — Lower Priority
