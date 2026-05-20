@@ -11,8 +11,9 @@
 
 ### 1.1 What It Is
 
-Full-stack TypeScript monorepo — Express API + Node.js CLI client + Vite web frontend.
-Deployed: Render (backend), GitHub Pages (frontend).
+Polyglot monorepo — Express API + Node.js trading CLI + Vite web frontend + internal Python service.
+Deployed/public: Render (api-service), GitHub Pages (frontend).
+Deployed/internal: Render private service (python-service).
 
 ### 1.2 What It Really Is
 
@@ -20,23 +21,28 @@ Domain = vehicle. Real project = reusable secure engineering foundation demonstr
 
 ### 1.3 Stack
 
-| Layer            | Technology                                               |
-| ---------------- | -------------------------------------------------------- |
-| Runtime          | Node.js 24 LTS latest                                    |
-| Language         | TypeScript (strict mode, compatible with Node 24 LTS)    |
-| Backend          | Express (compatible with Node 24 LTS)                    |
-| Frontend build   | Vite (compatible with Node 24 LTS)                       |
-| Validation       | Zod (compatible with Node 24 LTS)                        |
-| Testing          | Vitest (compatible with Node 24 LTS)                     |
-| Monorepo         | npm workspaces                                           |
-| Linting          | ESLint + typescript-eslint (compatible with Node 24 LTS) |
-| Pre-commit       | Husky + lint-staged (compatible with Node 24 LTS)        |
-| CI/CD            | GitHub Actions                                           |
-| Backend hosting  | Render (auto-deploy disabled — Actions-triggered only)   |
-| Frontend hosting | GitHub Pages (Actions-triggered only)                    |
-| Dev environment  | WSL2 → Ubuntu → Docker Dev Container                     |
+| Layer                     | Technology                                               |
+| ------------------------- | -------------------------------------------------------- |
+| Node runtime              | Node.js 24 LTS latest                                    |
+| Python runtime            | Python 3.13                                              |
+| Languages                 | TypeScript (strict mode), Python                         |
+| Backend                   | Express (compatible with Node 24 LTS)                    |
+| Frontend build            | Vite (compatible with Node 24 LTS)                       |
+| Python service            | FastAPI + Uvicorn                                        |
+| Validation                | Zod (Node side)                                          |
+| Testing                   | Vitest                                                   |
+| Node monorepo             | npm workspaces                                           |
+| Task orchestration        | Turborepo                                                |
+| Python package management | uv                                                       |
+| Linting                   | ESLint + typescript-eslint (compatible with Node 24 LTS) |
+| Pre-commit                | Husky + lint-staged (compatible with Node 24 LTS)        |
+| CI/CD                     | GitHub Actions                                           |
+| Backend hosting           | Render (auto-deploy disabled — Actions-triggered only)   |
+| Frontend hosting          | GitHub Pages (Actions-triggered only)                    |
+| Dev environment           | WSL2 → Ubuntu → Docker Dev Container                     |
 
-[!] All packages must be compatible with Node.js 24 LTS latest. Node 24 compatibility takes precedence over any prior version constraint.
+[!] All Node packages must be compatible with Node.js 24 LTS latest.
+[!] Python runtime is standardized on 3.13 across devcontainer, CI, and `uv.lock`.
 
 ---
 
@@ -86,15 +92,22 @@ Opening directly in WSL or Windows bypasses all container-level security.
 
 File: `.devcontainer/devcontainer.json`
 
-| Setting                            | Value                                                | Why                             |
-| ---------------------------------- | ---------------------------------------------------- | ------------------------------- |
-| `image`                            | `mcr.microsoft.com/devcontainers/typescript-node:24` | Official, maintained, Node 24   |
-| `remoteUser`                       | `node`                                               | Non-root execution              |
-| `--cap-drop=ALL`                   | All Linux capabilities dropped                       | Least privilege at kernel level |
-| `--security-opt=no-new-privileges` | Cannot escalate                                      | Prevents privilege escalation   |
-| `--pids-limit=1024`                | Max 1024 processes                                   | Fork bomb protection            |
-| `--dns=8.8.8.8`                    | Explicit DNS                                         | Prevents DNS hijacking          |
-| `postCreateCommand`                | `npm install`                                        | Auto-install on container start |
+| Setting                            | Value                                                    | Why                             |
+| ---------------------------------- | -------------------------------------------------------- | ------------------------------- |
+| `image`                            | `mcr.microsoft.com/devcontainers/typescript-node:24`     | Official, maintained, Node 24   |
+| `remoteUser`                       | `node`                                                   | Non-root execution              |
+| `--cap-drop=ALL`                   | All Linux capabilities dropped                           | Least privilege at kernel level |
+| `--security-opt=no-new-privileges` | Cannot escalate                                          | Prevents privilege escalation   |
+| `--pids-limit=1024`                | Max 1024 processes                                       | Fork bomb protection            |
+| `--dns=8.8.8.8`                    | Explicit DNS                                             | Prevents DNS hijacking          |
+| `postCreateCommand`                | `python3 -m pip install --user uv==0.7.3 && npm install` | Bootstraps both runtimes safely |
+
+Python support is added through the Dev Container Python feature:
+
+- `ghcr.io/devcontainers/features/python:1`
+- version: `3.13`
+
+[!] `uv` is pinned in devcontainer bootstrap. Never switch to unpinned installer scripts.
 
 ---
 
@@ -102,37 +115,41 @@ File: `.devcontainer/devcontainer.json`
 
 ### 4.1 Monorepo Structure
 
-```
+```text
 <project>/
 ├── apps/
-│   ├── api-service       → Express REST API (deployed: Render)
-│   ├── cli-client        → Node.js CLI (local execution)
-│   └── web-client        → Vite browser frontend (deployed: GitHub Pages)
+│   ├── api-service        → Express REST API (deployed: Render)
+│   ├── trading-client     → Node.js CLI (local execution)
+│   ├── web-client         → Vite browser frontend (deployed: GitHub Pages)
+│   └── python-service     → Internal FastAPI service (deployed: Render internal)
 ├── packages/
-│   ├── config            → Shared env loading, Zod validation, secrets gate
-│   └── shared-types      → Shared domain type + Zod schema
-├── .devcontainer/        → Dev Container definition
+│   ├── config             → Shared env loading, Zod validation, secrets gate
+│   └── shared-types       → Shared domain type + Zod schema
+├── .devcontainer/         → Dev Container definition
 ├── .github/
-│   ├── workflows/        → CI/CD pipelines
-│   └── dependabot.yml    → Automated dependency update PRs
-├── FOUNDATION.md         ← This file
-├── README.md             → Setup and usage
-└── AI_POLICY.md          → AI tool access rules
+│   ├── workflows/         → CI/CD pipelines
+│   └── dependabot.yml     → Automated dependency update PRs
+├── turbo.json             → Root task graph
+├── FOUNDATION.md          ← This file
+├── README.md              → Setup and usage
+└── AI_POLICY.md           → AI tool access rules
 ```
 
 [!] After any schema/type Δ in `packages/shared-types` → run `npm run build` inside that package before consuming in apps. TypeScript compiler reads from `dist/`, not `src/`.
 
 ### 4.2 Dependency Graph
 
-```
-apps/api-service     →  packages/config        →  (dotenv, zod)
-apps/api-service     →  packages/shared-types  →  (zod)
-apps/cli-client      →  packages/config
-apps/cli-client      →  packages/shared-types
-apps/web-client      →  (standalone, Vite, uses VITE_API_URL)
+```text
+apps/api-service        → packages/config        → (dotenv, zod)
+apps/api-service        → packages/shared-types  → (zod)
+apps/trading-client     → packages/shared-types
+apps/web-client         → packages/shared-types
+apps/python-service     → (fastapi, uvicorn)    ← app-local uv project
+root package.json       → turbo                  ← task orchestration only
 ```
 
 [!] Packages never depend on apps. Apps depend on packages. Direction must never be reversed.
+[!] Python service currently does not consume shared cross-language config or schemas. That integration is intentionally deferred.
 
 ### 4.3 Dependency Version Policy
 
@@ -149,7 +166,7 @@ Dependabot surfaces updates as reviewed, CI-gated PRs. See §7.6.
 - Zod env validation at startup — crashes fast on bad config
 - Middleware order: helmet → pino-http logging (with header redaction) → CORS (allowedOrigins list validation) → rate limiter (100 req/15 min/IP, RFC headers) → requireApiKey → routes
 
-**`apps/cli-client`**
+**`apps/trading-client`**
 
 - Optional `symbol` arg via `process.argv[2]`
 - Fetch with retry (2) + timeout (3000ms)
@@ -161,6 +178,15 @@ Dependabot surfaces updates as reviewed, CI-gated PRs. See §7.6.
 - Vite SPA — fetches `GET /trades` from `VITE_API_URL`
 - Zod validation on API response
 - Renders data to DOM
+
+**`apps/python-service`**
+
+- App-local Python service managed through `uv`
+- FastAPI app with `GET /health`
+- Binds to `PORT` (default `8000`)
+- Internal/private deployment target on Render
+- No shared Python workspace at root
+- No DB, no outbound networking, no public ingress in current phase
 
 **`packages/config`**
 
@@ -251,6 +277,8 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 1. WSL → Ubuntu
 2. Dev Container (.devcontainer/devcontainer.json)
    - non-root, --cap-drop=ALL, --security-opt=no-new-privileges, --pids-limit
+   - Node base image + explicit Python feature
+   - pinned `uv` bootstrap in `postCreateCommand`
 3. Verify VS Code opens inside container
 4. .gitignore, .aiignore, .cursorignore, AI_POLICY.md
 ```
@@ -274,10 +302,11 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 
 ### Phase 4 — Apps Against Contracts
 
-```
-1. apps/api-service    → Express + security middleware + endpoint
-2. apps/cli-client     → CLI + data processor + Zod validation on response
-3. apps/web-client     → Vite + fetch + Zod validation on response
+```text
+1. apps/api-service      → Express + security middleware + endpoint
+2. apps/trading-client   → CLI + data processor + Zod validation on response
+3. apps/web-client       → Vite + fetch + Zod validation on response
+4. apps/python-service   → FastAPI health service, isolated from Node shared packages for now
 ```
 
 ### Phase 5 — Tests Alongside Logic
@@ -289,20 +318,23 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 
 ### Phase 6 — CI Pipeline Before Deployment
 
-```
-1. ci.yml — lint → audit → build → test
+```text
+1. ci.yml — setup Node + Python + uv → lint → audit → build → test
 2. GitHub Actions permissions block — scoped per workflow
 3. Actions pinned to commit SHA
 4. .env.ci for CI-safe values
+5. app-local Python dependency sync via `uv sync`
 ```
 
 ### Phase 7 — Deployment
 
-```
+```text
 1. Backend → Render (path-filtered, Actions-triggered only)
 2. Frontend → GitHub Pages (path-filtered, official Actions)
-3. VITE_API_URL injected from GitHub repository variables
-4. End-to-end verification: browser → GitHub Pages → Render → API response
+3. Python service → Render internal/private service (path-filtered, deploy-hook only)
+4. VITE_API_URL injected from GitHub repository variables
+5. End-to-end verification: browser → GitHub Pages → Render API
+6. Internal verification: Render service → internal Python service health
 ```
 
 ### Phase 8 — Documentation
@@ -346,19 +378,23 @@ Update documentation only when:
 
 Triggers: every push to `main`, every PR.
 
-```
+```text
 1. Checkout (actions/checkout — SHA pinned)
 2. Setup Node.js 24 (actions/setup-node — SHA pinned)
-3. npm ci
-4. Copy .env.ci → .env
-5. npm run lint
-6. npm audit                ← all deps, not --production
-7. npm run build
-8. npm run test
+3. Setup Python 3.13 (actions/setup-python — SHA pinned)
+4. Setup uv (astral-sh/setup-uv — SHA pinned)
+5. npm ci
+6. apps/python-service → uv sync
+7. Copy .env.ci → .env
+8. npm run lint
+9. npm audit                  ← all deps, not --production
+10. npm run build
+11. npm run test
 ```
 
 [!] Never use `npm audit --production`. Dev dep vulnerabilities are real risks.
-[!] Always use SHA-pinned versions of `actions/checkout` and `actions/setup-node`.
+[!] Always use SHA-pinned versions of setup actions.
+[!] Python dependency resolution is app-local. No root Python workspace exists in current phase.
 
 > CI pipeline (`ci.yml`) runs alongside CodeQL static analysis (`codeql.yml`) in parallel on every PR. See §7.9.
 
@@ -454,10 +490,11 @@ feature branch → PR → CI (build-and-test ✅) → merge to main
 File: `.github/dependabot.yml` (not in `workflows/`)
 
 - Schedule: weekly
-- Ecosystems: `npm` + `github-actions`
+- Ecosystems: `npm` + `github-actions` + `uv`
 - Grouped PRs: enabled
 - All PRs: reviewed + CI must pass before merge
 - `@types/node` pinned to `24.x` — Dependabot ignores `25.x`+
+- Python updates scoped to `apps/python-service`
 
 [!] Dependabot security updates UI toggle = disabled. `dependabot.yml` handles all PRs. UI toggle creates duplicate, uncontrolled PR stream.
 
@@ -583,7 +620,7 @@ Headers set by `helmet()` defaults:
 ```
 ✔ Non-root Dev Container (--cap-drop=ALL, no-new-privileges, pids-limit)
 ✔ Context-gated secrets (loadSecrets() guard)
-✔ Zod runtime validation (api-service, cli-client, web-client)
+✔ Zod runtime validation (api-service, trading-client, web-client)
 ✔ CORS origin enforcement
 ✔ ESLint + Husky pre-commit
 ✔ npm audit (all deps) in CI
@@ -615,6 +652,16 @@ Headers set by `helmet()` defaults:
 ✔ TruffleHog secret scanning — trufflehog.yml, PR diff only, --only-verified, SHA + version pinned
 ✔ Dependency Review action on PRs (`.github/workflows/dependency-review.yml`)
 ✔ Prettier enforcement implemented without CI
+✔ Turborepo adopted as root task orchestrator
+✔ Root packageManager field added for Turbo compatibility
+✔ Python 3.13 devcontainer support added
+✔ uv pinned in devcontainer bootstrap
+✔ Internal FastAPI Python service added under `apps/python-service`
+✔ uv lockfile committed for app-local Python dependency reproducibility
+✔ CI extended with Python 3.13 + uv setup
+✔ Dependabot extended for `uv`
+✔ Render internal deploy workflow added for python-service
+✔ trading-client test command changed to `vitest run` for CI/Turbo compatibility
 ```
 
 ### 9.2 Next — High Impact, Low Effort
@@ -640,7 +687,9 @@ Headers set by `helmet()` defaults:
 → OWASP ZAP (DAST)
 → Distroless production container
 → HashiCorp Vault
-→ Nx or Turborepo (when build times justify)
+→ Expand Turborepo adoption to per-workspace lint/dev/test only when workspace contracts are standardized
+→ Root Python workspace only when multiple Python apps/packages justify it
+→ Cross-language shared schema/config strategy only when Python service needs real domain integration
 → React or advanced frontend
 → Docker production multi-stage build
 → Artifact attestations / provenance / build signing
@@ -803,6 +852,48 @@ SHA pin alone does not pin the Docker image — both are required.
 
 Deferred until release-chain need exists. Keep as future hardening item, not current scope.
 
+### Turborepo Adopted as Orchestrator, Not Package Manager
+
+Turborepo is introduced as the root task orchestrator only. It does not replace npm workspaces and does not own dependency installation.
+Reason: preserve explicit native package management boundaries in a mixed-runtime monorepo.
+[!] npm remains authoritative for Node dependencies and workspace linking.
+
+### Turborepo Adoption Is Intentionally Partial
+
+Not all workspaces expose uniform `lint`, `dev`, or valid `test` scripts.
+Current root orchestration therefore uses:
+
+- Turbo for `build`
+- Turbo for filtered `test`
+- direct root ESLint for `lint`
+- explicit per-app dev commands for API and Python
+  Reason: adopt only what is real and validated; avoid fake consistency.
+
+### Python Introduced as App-Local `uv` Project
+
+`apps/python-service` is intentionally managed as an app-local `uv` project with committed `uv.lock`.
+Reason: only one Python service exists today; root Python workspace would add complexity without payoff.
+
+### Root Python Workspace Deferred
+
+A root Python workspace is deferred until multiple Python apps or packages exist.
+Trigger to revisit: shared internal Python libs, multiple services, or true cross-service Python dependency graph.
+
+### Python Service Is Internal by Design
+
+The initial Python service is a Render internal/private service with no public ingress.
+Reason: service is currently dummy/health-only and should not expand public attack surface unnecessarily.
+
+### Python Runtime Standardized on 3.13
+
+Python version is standardized across devcontainer, CI, and `uv.lock` generation at 3.13.
+Reason: avoid local/CI/runtime drift during early polyglot adoption.
+
+### `vitest run` Required for Turbo/CI Test Stability
+
+`apps/trading-client` test script changed from `vitest` to `vitest run`.
+Reason: interactive watch-mode behavior prevents deterministic root test execution and CI completion.
+
 ---
 
 ## 11. Intentionally Deferred
@@ -817,7 +908,9 @@ Deferred until release-chain need exists. Keep as future hardening item, not cur
 | HashiCorp Vault                     | Overkill until multi-env production deployments exist                                                     |
 | Docker multi-stage production build | `npm ci && npm run build && npm prune --omit=dev` achieves same runtime result. Revisit hardening sprint. |
 | SBOM, Trivy, OWASP ZAP              | Needed when real traffic/sensitive data exists                                                            |
-| Nx / Turborepo                      | When build times justify                                                                                  |
+| Full Turbo task standardization     | When all workspaces expose consistent `build` / `lint` / `test` / `dev` contracts                         |
+| Root Python workspace               | When multiple Python apps/packages justify shared workspace management                                    |
+| Cross-language shared contracts     | When Python service needs domain-level integration with Node packages                                     |
 | Advanced frontend (React)           | When UI complexity justifies                                                                              |
 
 > Deferred ≠ forgotten. Complexity before necessity → engineering decay.

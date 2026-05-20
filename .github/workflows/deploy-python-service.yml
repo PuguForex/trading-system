@@ -1,0 +1,25 @@
+name: Deploy Python Service
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/python-service/**"
+      - ".github/workflows/deploy-python-service.yml"
+      - ".github/workflows/ci.yml"
+      - ".devcontainer/devcontainer.json"
+      - "package.json"
+      - "turbo.json"
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: trigger-render-deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_PYTHON_SERVICE_DEPLOY_HOOK_URL: ${{ secrets.RENDER_PYTHON_SERVICE_DEPLOY_HOOK_URL }}
+        run: curl -fsS -X POST "$RENDER_PYTHON_SERVICE_DEPLOY_HOOK_URL"

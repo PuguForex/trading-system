@@ -18,3 +18,10 @@ Thumbs.db
 apps/**/.env
 apps/**/.env.*
 context.txt
+.turbo
+apps/python-service/.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+.mypy_cache

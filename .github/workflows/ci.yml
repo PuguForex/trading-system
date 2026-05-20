@@ -23,8 +23,20 @@ jobs:
           node-version: 24
           cache: "npm"
 
-      - name: Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
+        with:
+          python-version: "3.13"
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v5
+
+      - name: Install Node dependencies
         run: npm ci
+
+      - name: Sync Python dependencies
+        working-directory: apps/python-service
+        run: uv sync
 
       - name: Load CI env
         run: cp .env.ci .env
