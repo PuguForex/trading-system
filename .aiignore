@@ -23,3 +23,10 @@ build/
 
 # Logs
 *.log
+.turbo
+apps/python-service/.venv
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.ruff_cache
+.mypy_cache
