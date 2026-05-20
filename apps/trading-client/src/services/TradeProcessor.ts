@@ -1,23 +1,23 @@
-import { Trade/*, TradeSchema*/ } from "shared-types";
+import { Trade /*, TradeSchema*/ } from "shared-types";
 import { TradeResult } from "../models/TradeResult";
 import { Summary } from "../models/Summary";
 
 export function filterTradesBySymbol(
   trades: Trade[],
-  symbol?: string
+  symbol?: string,
 ): Trade[] {
   if (!symbol) return trades;
 
-  return trades.filter(t => t.symbol === symbol);
+  return trades.filter((t) => t.symbol === symbol);
 }
 
 export function processTrades(trades: Trade[]): TradeResult[] {
-  return trades.map(trade => {
+  return trades.map((trade) => {
     const profit = (trade.exit - trade.entry) * trade.volume;
 
     return {
       ...trade,
-      profit
+      profit,
     };
   });
 }
@@ -44,6 +44,6 @@ export function calculateSummary(results: TradeResult[]): Summary {
     winRate,
     totalProfit,
     totalLoss,
-    net: totalProfit + totalLoss
+    net: totalProfit + totalLoss,
   };
 }

@@ -1,6 +1,7 @@
 # SESSION.md
 
 ## Purpose
+
 Preserves short-term working continuity.
 Not a governance document.
 Exists so work can resume safely after interruption.
@@ -8,11 +9,13 @@ Exists so work can resume safely after interruption.
 ---
 
 ## Current Focus
+
 Dependency Review action on PRs — implemented in `.github/workflows/dependency-review.yml`.
 
 ---
 
 ## Completed This Session
+
 - PR #66 merged: `github/codeql-action` bump reviewed and approved.
 - PR #67 merged: `express-rate-limit` bump reviewed and approved.
 - PR #68 merged: dev-dependencies group reviewed and approved, including `@types/node 24.12.4`.
@@ -21,16 +24,19 @@ Dependency Review action on PRs — implemented in `.github/workflows/dependency
 ---
 
 ## In Progress
+
 - None
 
 ---
 
 ## Blockers
+
 - None
 
 ---
 
 ## Decisions Made
+
 - Dependabot batch approved: #66, #67, #68.
 - `@types/node` patch bump remains within `24.x` policy.
 - Dependency Review workflow uses `pull_request` trigger with SHA-pinned GitHub Actions.
@@ -38,13 +44,16 @@ Dependency Review action on PRs — implemented in `.github/workflows/dependency
 ---
 
 ## Files Touched
+
 - `SESSION.md` — Dependabot batch completion recorded.
 - `.github/workflows/dependency-review.yml` — PR dependency review gate added.
 
 ---
 
 ## Project File Tree (Categorised Snapshot)
+
 ### Governance
+
 ```text
 FOUNDATION.md
 AI_POLICY.md
@@ -53,11 +62,13 @@ README.md
 ```
 
 ### Dev Container
+
 ```text
 .devcontainer/devcontainer.json
 ```
 
 ### CI/CD Workflows
+
 ```text
 .github/workflows/ci.yml
 .github/workflows/codeql.yml
@@ -69,6 +80,7 @@ README.md
 ```
 
 ### AI Access Control
+
 ```text
 .aiignore
 .cursorignore
@@ -76,6 +88,7 @@ README.md
 ```
 
 ### Monorepo Root Config
+
 ```text
 package.json
 package-lock.json
@@ -89,6 +102,7 @@ eslint.config.mjs
 ```
 
 ### Env Files
+
 ```text
 .env.development
 .env.production
@@ -97,6 +111,7 @@ eslint.config.mjs
 ```
 
 ### apps/api-service
+
 ```text
 apps/api-service/package.json
 apps/api-service/tsconfig.json
@@ -105,6 +120,7 @@ apps/api-service/src/middleware/auth.ts
 ```
 
 ### apps/trading-client
+
 ```text
 apps/trading-client/package.json
 apps/trading-client/tsconfig.json
@@ -118,6 +134,7 @@ apps/trading-client/src/utils/ReportPrinter.ts
 ```
 
 ### apps/web-client
+
 ```text
 apps/web-client/package.json
 apps/web-client/tsconfig.json
@@ -129,6 +146,7 @@ apps/web-client/.gitignore
 ```
 
 ### packages/config
+
 ```text
 packages/config/package.json
 packages/config/tsconfig.json
@@ -136,6 +154,7 @@ packages/config/src/env.ts
 ```
 
 ### packages/shared-types
+
 ```text
 packages/shared-types/package.json
 packages/shared-types/tsconfig.json
@@ -143,6 +162,7 @@ packages/shared-types/src/index.ts
 ```
 
 ### Tooling Scripts
+
 ```text
 context-dump.sh
 context.txt
@@ -151,6 +171,7 @@ context.txt
 ---
 
 ## Next Actions
+
 1. Integration tests — `FOUNDATION.md §9.3`.
 2. Prettier enforcement — `FOUNDATION.md §9.3`.
 3. Dependency Review action merged and validated in CI.
@@ -158,5 +179,6 @@ context.txt
 ---
 
 ## Resume Notes
+
 - Dependabot PR batch completed and merged.
 - Next hardening step remains Dependency Review action on PRs.

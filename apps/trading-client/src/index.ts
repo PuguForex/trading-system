@@ -1,5 +1,9 @@
 import { loadTrades } from "./services/TradeService";
-import { filterTradesBySymbol, processTrades, calculateSummary } from "./services/TradeProcessor";
+import {
+  filterTradesBySymbol,
+  processTrades,
+  calculateSummary,
+} from "./services/TradeProcessor";
 import { printSummary } from "./utils/ReportPrinter";
 
 // const x: string = 123; // type error for CI/CD failure
@@ -22,7 +26,6 @@ async function main(): Promise<void> {
     const summary = calculateSummary(results);
 
     printSummary(summary);
-
   } catch (error) {
     console.error("Error:", (error as Error).message);
     process.exit(1);
