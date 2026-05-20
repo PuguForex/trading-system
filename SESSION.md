@@ -10,16 +10,14 @@ Exists so work can resume safely after interruption.
 
 ## Current Focus
 
-Dependency Review action on PRs — implemented in `.github/workflows/dependency-review.yml`.
+Prettier implementation without CI — current state.
 
 ---
 
 ## Completed This Session
 
-- PR #66 merged: `github/codeql-action` bump reviewed and approved.
-- PR #67 merged: `express-rate-limit` bump reviewed and approved.
-- PR #68 merged: dev-dependencies group reviewed and approved, including `@types/node 24.12.4`.
-- Dependency Review workflow implemented in `.github/workflows/dependency-review.yml`.
+- Prettier implementation completed without CI enforcement.
+- `SESSION.md` and `FOUNDATION.md` updated to reflect current state.
 
 ---
 
@@ -37,16 +35,17 @@ Dependency Review action on PRs — implemented in `.github/workflows/dependency
 
 ## Decisions Made
 
-- Dependabot batch approved: #66, #67, #68.
-- `@types/node` patch bump remains within `24.x` policy.
-- Dependency Review workflow uses `pull_request` trigger with SHA-pinned GitHub Actions.
+- Prettier is implemented without CI.
+- CI enforcement remains deferred.
+- Real domain business logic remains deferred to future work.
+- Next active implementation topic will be determined later.
 
 ---
 
 ## Files Touched
 
-- `SESSION.md` — Dependabot batch completion recorded.
-- `.github/workflows/dependency-review.yml` — PR dependency review gate added.
+- `SESSION.md` — current state updated.
+- `FOUNDATION.md` — current state updated.
 
 ---
 
@@ -99,6 +98,7 @@ eslint.config.mjs
 .gitattributes
 .husky/pre-commit
 .vscode/settings.json
+.prettierignore
 ```
 
 ### Env Files
@@ -172,13 +172,13 @@ context.txt
 
 ## Next Actions
 
-1. Integration tests — `FOUNDATION.md §9.3`.
-2. Prettier enforcement — `FOUNDATION.md §9.3`.
-3. Dependency Review action merged and validated in CI.
+1. Commit updated docs.
+2. Push branch.
+3. Leave implementation as-is.
 
 ---
 
 ## Resume Notes
 
-- Dependabot PR batch completed and merged.
-- Next hardening step remains Dependency Review action on PRs.
+- Prettier exists without CI enforcement.
+- Session and foundation docs now reflect that state.
