@@ -1,7 +1,7 @@
 # FOUNDATION.md
 
-> Source of truth. Wins over all other docs.
-> Living document — update on architecture, goals, or constraints Δ.
+> Source of truth for completed and approved architecture decisions.
+> Documentation updates occur after a topic, feature, or phase is completed and validated.
 > Audience: engineers (human + AI).
 > Companion: `README.md` (setup), `AI_POLICY.md` (AI rules).
 
@@ -10,29 +10,31 @@
 ## 1. Project Identity
 
 ### 1.1 What It Is
+
 Full-stack TypeScript monorepo — Express API + Node.js CLI client + Vite web frontend.
 Deployed: Render (backend), GitHub Pages (frontend).
 
 ### 1.2 What It Really Is
+
 Domain = vehicle. Real project = reusable secure engineering foundation demonstrating DevSecOps, AI containment, production CI/CD — applicable to any business domain.
 
 ### 1.3 Stack
 
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 24 LTS latest |
-| Language | TypeScript (strict mode, compatible with Node 24 LTS) |
-| Backend | Express (compatible with Node 24 LTS) |
-| Frontend build | Vite (compatible with Node 24 LTS) |
-| Validation | Zod (compatible with Node 24 LTS) |
-| Testing | Vitest (compatible with Node 24 LTS) |
-| Monorepo | npm workspaces |
-| Linting | ESLint + typescript-eslint (compatible with Node 24 LTS) |
-| Pre-commit | Husky + lint-staged (compatible with Node 24 LTS) |
-| CI/CD | GitHub Actions |
-| Backend hosting | Render (auto-deploy disabled — Actions-triggered only) |
-| Frontend hosting | GitHub Pages (Actions-triggered only) |
-| Dev environment | WSL2 → Ubuntu → Docker Dev Container |
+| Layer            | Technology                                               |
+| ---------------- | -------------------------------------------------------- |
+| Runtime          | Node.js 24 LTS latest                                    |
+| Language         | TypeScript (strict mode, compatible with Node 24 LTS)    |
+| Backend          | Express (compatible with Node 24 LTS)                    |
+| Frontend build   | Vite (compatible with Node 24 LTS)                       |
+| Validation       | Zod (compatible with Node 24 LTS)                        |
+| Testing          | Vitest (compatible with Node 24 LTS)                     |
+| Monorepo         | npm workspaces                                           |
+| Linting          | ESLint + typescript-eslint (compatible with Node 24 LTS) |
+| Pre-commit       | Husky + lint-staged (compatible with Node 24 LTS)        |
+| CI/CD            | GitHub Actions                                           |
+| Backend hosting  | Render (auto-deploy disabled — Actions-triggered only)   |
+| Frontend hosting | GitHub Pages (Actions-triggered only)                    |
+| Dev environment  | WSL2 → Ubuntu → Docker Dev Container                     |
 
 [!] All packages must be compatible with Node.js 24 LTS latest. Node 24 compatibility takes precedence over any prior version constraint.
 
@@ -45,7 +47,7 @@ Goal 2 — Reusable foundation. Monorepo, Dev Container, CI/CD, shared packages,
 Goal 3 — Security as engineering. DevSecOps baked in at every layer. Every constraint enforced, not just documented.
 Goal 4 — AI containment. AI tools = contained actors, not trusted agents. System controls what AI can affect.
 Goal 5 — Real CI/CD. Pipeline enforces lint, audit, build, tests on every push. Gate, not badge.
-Goal 6 — Document like a pro team. Every architectural decision recorded. Onboardable by any stranger (human or AI).
+Goal 6 — Document completed architectural decisions and finalized implementation patterns. Documentation reflects stable, validated system behavior rather than work-in-progress exploration. Onboardable by any stranger (human or AI).
 Goal 7 — Build in layers. Complexity added only when justified. Deferred items tracked in §11.
 
 ---
@@ -67,30 +69,32 @@ Windows 11 (Host)
 
 ### 3.2 Layer Responsibilities
 
-| Layer | Purpose | Security Role |
-|---|---|---|
-| Windows host | GUI + tooling only | No code, no execution |
-| WSL2 → Ubuntu | Linux kernel, native FS perf | Code at `/home/projects/`, not `/mnt/c/` |
-| VS Code WSL Remote | IDE backend in Linux | Extensions execute in Linux context |
-| Dev Container | Blast radius limiter | AI + code cannot reach host |
-| `node` user (non-root) | Least privilege execution | Cannot modify system, cannot escalate |
+| Layer                  | Purpose                      | Security Role                            |
+| ---------------------- | ---------------------------- | ---------------------------------------- |
+| Windows host           | GUI + tooling only           | No code, no execution                    |
+| WSL2 → Ubuntu          | Linux kernel, native FS perf | Code at `/home/projects/`, not `/mnt/c/` |
+| VS Code WSL Remote     | IDE backend in Linux         | Extensions execute in Linux context      |
+| Dev Container          | Blast radius limiter         | AI + code cannot reach host              |
+| `node` user (non-root) | Least privilege execution    | Cannot modify system, cannot escalate    |
 
 ### 3.3 Non-Negotiable
+
 [!] VS Code must show `[Dev Container: <project>-dev]` before any dev or AI work begins.
 Opening directly in WSL or Windows bypasses all container-level security.
 
 ### 3.4 Dev Container Config
+
 File: `.devcontainer/devcontainer.json`
 
-| Setting | Value | Why |
-|---|---|---|
-| `image` | `mcr.microsoft.com/devcontainers/typescript-node:24` | Official, maintained, Node 24 |
-| `remoteUser` | `node` | Non-root execution |
-| `--cap-drop=ALL` | All Linux capabilities dropped | Least privilege at kernel level |
-| `--security-opt=no-new-privileges` | Cannot escalate | Prevents privilege escalation |
-| `--pids-limit=1024` | Max 1024 processes | Fork bomb protection |
-| `--dns=8.8.8.8` | Explicit DNS | Prevents DNS hijacking |
-| `postCreateCommand` | `npm install` | Auto-install on container start |
+| Setting                            | Value                                                | Why                             |
+| ---------------------------------- | ---------------------------------------------------- | ------------------------------- |
+| `image`                            | `mcr.microsoft.com/devcontainers/typescript-node:24` | Official, maintained, Node 24   |
+| `remoteUser`                       | `node`                                               | Non-root execution              |
+| `--cap-drop=ALL`                   | All Linux capabilities dropped                       | Least privilege at kernel level |
+| `--security-opt=no-new-privileges` | Cannot escalate                                      | Prevents privilege escalation   |
+| `--pids-limit=1024`                | Max 1024 processes                                   | Fork bomb protection            |
+| `--dns=8.8.8.8`                    | Explicit DNS                                         | Prevents DNS hijacking          |
+| `postCreateCommand`                | `npm install`                                        | Auto-install on container start |
 
 ---
 
@@ -131,12 +135,14 @@ apps/web-client      →  (standalone, Vite, uses VITE_API_URL)
 [!] Packages never depend on apps. Apps depend on packages. Direction must never be reversed.
 
 ### 4.3 Dependency Version Policy
+
 Exact versions only — no `^` or `~`. `.npmrc` enforces `save-exact=true`.
 Dependabot surfaces updates as reviewed, CI-gated PRs. See §7.6.
 
 ### 4.4 Application Responsibilities
 
 **`apps/api-service`**
+
 - `GET /trades` endpoint
 - CORS restricted to `ALLOWED_ORIGINS` — all other origins rejected
 - `loadSecrets("server-init")` → first call before any other logic
@@ -144,23 +150,27 @@ Dependabot surfaces updates as reviewed, CI-gated PRs. See §7.6.
 - Middleware order: helmet → pino-http logging (with header redaction) → CORS (allowedOrigins list validation) → rate limiter (100 req/15 min/IP, RFC headers) → requireApiKey → routes
 
 **`apps/cli-client`**
+
 - Optional `symbol` arg via `process.argv[2]`
 - Fetch with retry (2) + timeout (3000ms)
 - Zod validation on API response
 - Calculates + prints P&L, win rate, net result
 
 **`apps/web-client`**
+
 - Vite SPA — fetches `GET /trades` from `VITE_API_URL`
 - Zod validation on API response
 - Renders data to DOM
 
 **`packages/config`**
+
 - Loads `.env.{NODE_ENV}` → fallback `.env` → Zod validation
 - Exports validated `env`: `PORT`, `API_URL`, `ALLOWED_ORIGINS`, optional `API_KEY`
 - `loadSecrets(context)` — context-gated secrets loader (see §5.3)
 - `typescript` + `@types/node` in `devDependencies`
 
 **`packages/shared-types`**
+
 - Single source of truth for shared domain type
 - `TradeSchema` → `Trade` (Zod schema + type inference)
 - Used by all apps — never define the type elsewhere
@@ -186,14 +196,14 @@ Layer 10: AI behavior policy              (AI_POLICY.md)
 
 ### 5.2 Env File Strategy
 
-| File | Content | Committed |
-|---|---|---|
-| `.env.development` | Non-sensitive dev config | ✅ |
-| `.env.production` | Non-sensitive prod config | ✅ |
-| `.env.ci` | CI-safe values, no real secrets | ✅ |
-| `.env.example` | Onboarding template — all fields documented | ✅ |
-| `.env.secrets` | Sensitive values (API keys, tokens) | ❌ Never |
-| `.env` | Local fallback | ❌ Never |
+| File               | Content                                     | Committed |
+| ------------------ | ------------------------------------------- | --------- |
+| `.env.development` | Non-sensitive dev config                    | ✅        |
+| `.env.production`  | Non-sensitive prod config                   | ✅        |
+| `.env.ci`          | CI-safe values, no real secrets             | ✅        |
+| `.env.example`     | Onboarding template — all fields documented | ✅        |
+| `.env.secrets`     | Sensitive values (API keys, tokens)         | ❌ Never  |
+| `.env`             | Local fallback                              | ❌ Never  |
 
 [!] Never move secrets into `.env.{environment}` files.
 [!] Never add new env vars without adding to Zod schema in `packages/config/src/env.ts`.
@@ -208,16 +218,16 @@ loadSecrets("anything-else") → ❌ throws — not in allowedContexts
 
 Secrets cannot be loaded silently, accidentally, or by AI-generated code missing the correct context string.
 
-[!] Never add new allowed contexts to `loadSecrets()` without documented reason.
+[!] Never add new allowed contexts to `loadSecrets()` unless the change is documented before merge or release.
 [!] `loadSecrets()` must always be first call in any server entry point.
 
 ### 5.4 AI Access Controls
 
-| File | Purpose |
-|---|---|
-| `.aiignore` | Blocks AI tools from reading `.env*`, secrets, dist, logs |
-| `.cursorignore` | Same restrictions for Cursor |
-| `AI_POLICY.md` | Behavioral rules — what AI can/cannot suggest |
+| File            | Purpose                                                   |
+| --------------- | --------------------------------------------------------- |
+| `.aiignore`     | Blocks AI tools from reading `.env*`, secrets, dist, logs |
+| `.cursorignore` | Same restrictions for Cursor                              |
+| `AI_POLICY.md`  | Behavioral rules — what AI can/cannot suggest             |
 
 [!] All three files must be reviewed + kept current when new sensitive file patterns are added.
 
@@ -226,14 +236,17 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ## 6. Professional Build Sequence
 
 ### Phase 0 — Define Before Building
+
 ```
 1. Define what is being built (domain, language, runtime)
 2. Define non-functional requirements (security, AI usage, deployment)
 3. Sketch architecture (apps, packages, communication)
-4. Write FOUNDATION.md FIRST — as spec, before any code
+4. Create an initial lightweight project outline before implementation
+5. Update FOUNDATION.md after architecture or implementation topics are completed and validated
 ```
 
 ### Phase 1 — Secure Dev Environment
+
 ```
 1. WSL → Ubuntu
 2. Dev Container (.devcontainer/devcontainer.json)
@@ -243,6 +256,7 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ```
 
 ### Phase 2 — Skeleton + Quality Gates
+
 ```
 1. npm workspaces (/apps, /packages)
 2. TypeScript strict mode across all packages
@@ -252,12 +266,14 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ```
 
 ### Phase 3 — Shared Packages First
+
 ```
 1. packages/shared-types  → domain type + Zod schema
 2. packages/config        → env loader + Zod + loadSecrets()
 ```
 
 ### Phase 4 — Apps Against Contracts
+
 ```
 1. apps/api-service    → Express + security middleware + endpoint
 2. apps/cli-client     → CLI + data processor + Zod validation on response
@@ -265,12 +281,14 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ```
 
 ### Phase 5 — Tests Alongside Logic
+
 ```
 1. Unit tests written as each logic unit is created
 2. CI runs tests from first pipeline run
 ```
 
 ### Phase 6 — CI Pipeline Before Deployment
+
 ```
 1. ci.yml — lint → audit → build → test
 2. GitHub Actions permissions block — scoped per workflow
@@ -279,6 +297,7 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ```
 
 ### Phase 7 — Deployment
+
 ```
 1. Backend → Render (path-filtered, Actions-triggered only)
 2. Frontend → GitHub Pages (path-filtered, official Actions)
@@ -287,14 +306,31 @@ Secrets cannot be loaded silently, accidentally, or by AI-generated code missing
 ```
 
 ### Phase 8 — Documentation
+
 ```
-Written per phase, not at the end:
-- FOUNDATION.md  → Phase 0 (spec) → updated throughout
-- README.md      → Phase 1
-- AI_POLICY.md   → Phase 1
+Documentation is updated after a feature, topic, or implementation phase is completed and verified:
+- FOUNDATION.md  → finalized architecture and engineering decisions
+- README.md      → finalized setup and operational workflows
+- AI_POLICY.md   → finalized AI governance rules
+```
+
+### Documentation Timing Policy
+
+```
+Documentation should reflect completed and validated system behavior.
+
+Do not continuously update documentation during exploratory implementation work.
+
+Update documentation only when:
+- a feature is complete
+- architecture is finalized
+- security decisions are confirmed
+- CI/CD behavior is stable
+- implementation is merged or approved
 ```
 
 ### Phase 9 — AI-Augmented Dev
+
 ```
 1. VS Code AI extension setup
 2. Safe usage rules aligned with AI_POLICY.md
@@ -307,6 +343,7 @@ Written per phase, not at the end:
 ## 7. CI/CD Pipeline
 
 ### 7.1 CI (`ci.yml`)
+
 Triggers: every push to `main`, every PR.
 
 ```
@@ -326,7 +363,9 @@ Triggers: every push to `main`, every PR.
 > CI pipeline (`ci.yml`) runs alongside CodeQL static analysis (`codeql.yml`) in parallel on every PR. See §7.9.
 
 ### 7.2 Frontend Deployment (`deploy-frontend.yml`)
+
 Triggers: push to `main` when paths change:
+
 - `apps/web-client/**`
 - `packages/shared-types/**`
 - `package.json` / `package-lock.json`
@@ -352,7 +391,9 @@ deploy:
 GitHub Pages source: must be set to `"GitHub Actions"` (not "Deploy from branch").
 
 ### 7.3 Backend Deployment (`deploy-backend.yml`)
+
 Triggers: push to `main` when paths change:
+
 - `apps/api-service/**`
 - `packages/config/**`
 - `packages/shared-types/**`
@@ -389,24 +430,27 @@ permissions:
 ```
 
 ### 7.5 Branch Protection Rules
+
 Applied to: `main`
 
-| Rule | Setting | Reason |
-|---|---|---|
-| Require PR before merging | ✅ | No direct pushes to main |
-| Require status checks (`build-and-test`) | ✅ | Broken code cannot merge |
-| Require branches up to date | ✅ | CI runs on latest code |
-| Require approvals | ❌ | Solo developer |
+| Rule                                     | Setting | Reason                   |
+| ---------------------------------------- | ------- | ------------------------ |
+| Require PR before merging                | ✅      | No direct pushes to main |
+| Require status checks (`build-and-test`) | ✅      | Broken code cannot merge |
+| Require branches up to date              | ✅      | CI runs on latest code   |
+| Require approvals                        | ❌      | Solo developer           |
 
 [!] `jobs.<job>.name` must be explicitly set in YAML. GitHub only detects named jobs for branch protection.
 [!] Bypass rules override ALL protection including CI — emergency use only.
 
 Enforcement flow:
+
 ```
 feature branch → PR → CI (build-and-test ✅) → merge to main
 ```
 
 ### 7.6 Dependabot
+
 File: `.github/dependabot.yml` (not in `workflows/`)
 
 - Schedule: weekly
@@ -422,6 +466,7 @@ File: `.github/dependabot.yml` (not in `workflows/`)
 [!] Create feature branch BEFORE staging or committing. Never stage/commit on `main`.
 
 Correct order:
+
 ```bash
 git checkout main && git pull origin main
 git checkout -b <prefix>/<branch-name>   ← FIRST
@@ -439,39 +484,42 @@ Branch prefixes: `feature/` `fix/` `docs/` `security/` `chore/`
 Commit types: `feat:` `fix:` `docs:` `security:` `chore:`
 
 `git commit --amend` + `--force-with-lease`:
+
 - Use when fix belongs to same logical unit as previous commit on feature branch
 - Never amend commits already merged to `main`
 - Never use bare `--force`
 
 ### 7.8 GitHub Security & Analysis Settings
 
-| Feature | Status | Notes |
-|---|---|---|
-| Security advisories | ✅ | GitHub default |
-| Secret scanning | ✅ | GitHub default (all public repos, Feb 2024) |
-| Push protection | ✅ | Blocks secret-containing pushes |
-| Dependency graph | ✅ | Required for Dependabot alerts |
-| Dependabot alerts | ✅ | GitHub Advisory Database |
-| Dependabot malware alerts | ✅ | Active compromise detection |
-| Dependabot version updates | ✅ | Via `dependabot.yml` §7.6 |
-| CodeQL | ✅ | `codeql.yml` — see §7.9 |
-| Dependabot security updates (UI) | ⏸️ Disabled intentionally | Controlled via `dependabot.yml` |
-| Security policy | ⏸️ Skipped | Solo project |
-| Private vulnerability reporting | ⏸️ Skipped | Solo project |
+| Feature                          | Status                    | Notes                                       |
+| -------------------------------- | ------------------------- | ------------------------------------------- |
+| Security advisories              | ✅                        | GitHub default                              |
+| Secret scanning                  | ✅                        | GitHub default (all public repos, Feb 2024) |
+| Push protection                  | ✅                        | Blocks secret-containing pushes             |
+| Dependency graph                 | ✅                        | Required for Dependabot alerts              |
+| Dependabot alerts                | ✅                        | GitHub Advisory Database                    |
+| Dependabot malware alerts        | ✅                        | Active compromise detection                 |
+| Dependabot version updates       | ✅                        | Via `dependabot.yml` §7.6                   |
+| CodeQL                           | ✅                        | `codeql.yml` — see §7.9                     |
+| Dependabot security updates (UI) | ⏸️ Disabled intentionally | Controlled via `dependabot.yml`             |
+| Security policy                  | ⏸️ Skipped                | Solo project                                |
+| Private vulnerability reporting  | ⏸️ Skipped                | Solo project                                |
 
 ### 7.9 CodeQL Static Analysis (`codeql.yml`)
+
 Triggers: push to `main`, every PR, weekly (Monday 04:27 UTC)
 
 Jobs (parallel, fail-fast: false):
+
 - `javascript-typescript` → TS/JS/HTML semantic analysis, 50+ security queries
 - `actions` → workflow misconfigs, secret exposure patterns
 
-| Language | CodeQL value | Coverage |
-|---|---|---|
-| TypeScript | `javascript-typescript` | ✅ |
-| JavaScript | `javascript-typescript` | ✅ |
-| HTML | `javascript-typescript` | ✅ inline scripts |
-| GitHub Actions YAML | `actions` | ✅ |
+| Language            | CodeQL value            | Coverage          |
+| ------------------- | ----------------------- | ----------------- |
+| TypeScript          | `javascript-typescript` | ✅                |
+| JavaScript          | `javascript-typescript` | ✅                |
+| HTML                | `javascript-typescript` | ✅ inline scripts |
+| GitHub Actions YAML | `actions`               | ✅                |
 
 ```yaml
 permissions:
@@ -480,10 +528,11 @@ permissions:
 ```
 
 Results → GitHub → Security → Code scanning alerts (not PR failures by default).
-[!] Never disable CodeQL without documented reason.
+[!] Never disable CodeQL unless the change is documented before merge or release.
 [!] Both matrix entries required. Removing `actions` leaves CI/CD pipeline unanalysed.
 
 ### 7.10 Rate Limiting (`apps/api-service`)
+
 Package: `express-rate-limit` (compatible with Node 24 LTS)
 Applied: globally before all routes.
 
@@ -491,19 +540,20 @@ Config: 100 req / 15 min / IP, `standardHeaders: "draft-8"`, legacy headers disa
 [?] Applied before routes → every current + future endpoint automatically protected.
 
 ### 7.11 HTTP Security Headers (`apps/api-service`)
+
 Package: `helmet` (compatible with Node 24 LTS)
 Applied: first middleware — before cors, limiter, routes.
 
 Headers set by `helmet()` defaults:
 
-| Header | Protection |
-|---|---|
-| `X-Powered-By` removed | Stack fingerprinting prevention |
-| `Content-Security-Policy` | XSS |
-| `X-Frame-Options: SAMEORIGIN` | Clickjacking |
-| `X-Content-Type-Options: nosniff` | MIME sniffing |
-| `Strict-Transport-Security` | SSL stripping |
-| `Referrer-Policy` | URL leakage |
+| Header                            | Protection                      |
+| --------------------------------- | ------------------------------- |
+| `X-Powered-By` removed            | Stack fingerprinting prevention |
+| `Content-Security-Policy`         | XSS                             |
+| `X-Frame-Options: SAMEORIGIN`     | Clickjacking                    |
+| `X-Content-Type-Options: nosniff` | MIME sniffing                   |
+| `Strict-Transport-Security`       | SSL stripping                   |
+| `Referrer-Policy`                 | URL leakage                     |
 
 [!] Helmet must run first — every response (including CORS rejections, 404s) carries security headers.
 [!] Middleware order non-negotiable: `helmet → pino-http → cors → limiter → requireApiKey → routes`
@@ -512,23 +562,24 @@ Headers set by `helmet()` defaults:
 
 ## 8. Known Gaps
 
-| # | Gap | File | Status |
-|---|---|---|---|
-| 1 | `.env.example` missing fields | `.env.example` | ✅ Fixed |
-| 2 | `typescript` missing from `devDependencies` | `packages/config/package.json` | ✅ Fixed |
-| 3 | `npm audit --production` in CI | `.github/workflows/ci.yml` | ✅ Fixed |
-| 4 | No Zod validation on API response in web client | `apps/web-client/src/main.ts` | ✅ Fixed |
-| 5 | `ALLOWED_OUTBOUND_HOSTS` declared but not enforced | `packages/config/src/env.ts` | ⏸️ Deferred — requires infra-level enforcement (egress firewall/proxy). Not enforceable at app layer. Revisit hardening sprint. |
-| 6 | Render deploys on every push — no path filtering | `deploy-backend.yml` | ✅ Fixed |
-| 7 | `@types/node` pinned to incompatible version | `packages/config/package.json` | ✅ Fixed — aligned to Node 24 LTS |
-| 8 | `^` and `~` in multiple `package.json` files | monorepo-wide | ✅ Fixed — exact versions + `.npmrc` `save-exact=true` |
-| 9 | `shared-types` ESM resolution for Vite | `packages/shared-types/package.json` | ✅ Fixed — `exports` field added with `"import": "./src/index.ts"` |
+| #   | Gap                                                | File                                 | Status                                                                                                                          |
+| --- | -------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `.env.example` missing fields                      | `.env.example`                       | ✅ Fixed                                                                                                                        |
+| 2   | `typescript` missing from `devDependencies`        | `packages/config/package.json`       | ✅ Fixed                                                                                                                        |
+| 3   | `npm audit --production` in CI                     | `.github/workflows/ci.yml`           | ✅ Fixed                                                                                                                        |
+| 4   | No Zod validation on API response in web client    | `apps/web-client/src/main.ts`        | ✅ Fixed                                                                                                                        |
+| 5   | `ALLOWED_OUTBOUND_HOSTS` declared but not enforced | `packages/config/src/env.ts`         | ⏸️ Deferred — requires infra-level enforcement (egress firewall/proxy). Not enforceable at app layer. Revisit hardening sprint. |
+| 6   | Render deploys on every push — no path filtering   | `deploy-backend.yml`                 | ✅ Fixed                                                                                                                        |
+| 7   | `@types/node` pinned to incompatible version       | `packages/config/package.json`       | ✅ Fixed — aligned to Node 24 LTS                                                                                               |
+| 8   | `^` and `~` in multiple `package.json` files       | monorepo-wide                        | ✅ Fixed — exact versions + `.npmrc` `save-exact=true`                                                                          |
+| 9   | `shared-types` ESM resolution for Vite             | `packages/shared-types/package.json` | ✅ Fixed — `exports` field added with `"import": "./src/index.ts"`                                                              |
 
 ---
 
 ## 9. DevSecOps Roadmap
 
 ### 9.1 Completed
+
 ```
 ✔ Non-root Dev Container (--cap-drop=ALL, no-new-privileges, pids-limit)
 ✔ Context-gated secrets (loadSecrets() guard)
@@ -565,10 +616,13 @@ Headers set by `helmet()` defaults:
 ```
 
 ### 9.2 Next — High Impact, Low Effort
+
 ```
+
 ```
 
 ### 9.3 After Phase 4 — Medium Priority
+
 ```
 → Semgrep (SAST in CI) — deferred; see §10 Decision Log
 → Dependency Review action on PRs
@@ -577,6 +631,7 @@ Headers set by `helmet()` defaults:
 ```
 
 ### 9.4 Future — Lower Priority
+
 ```
 → SBOM generation
 → Trivy (container image scanning)
@@ -594,98 +649,124 @@ Headers set by `helmet()` defaults:
 
 ## 10. Decision Log
 
+Documentation timing rule:
+Permanent architectural, security, CI/CD, or operational deviations must be documented before merge or release, not during exploratory implementation work.
+
 ### npm Workspaces over Nx/Turborepo
+
 Manual workflows must be understood before automating. Revisit when build times exceed 2 min or dep graph becomes unmanageable.
 
 ### Render + GitHub Pages
+
 Free tier, auto-deploy from GitHub, zero infra management. Revisit when persistent storage, custom domains, or advanced networking required.
 
 ### Dev Container Before Business Logic
+
 Environment = first deliverable. Every line of code written inside secure container. Maintain this order in all derived projects.
 
 ### `.env.secrets` Over Direct `.env`
+
 Prevents accidental exposure in logs, AI reads, or commits. Makes secret access intentional + auditable.
 [!] Never consolidate secrets into `.env.{environment}`.
 
 ### Zod for Types + Validation
+
 Single source of truth. Schema = type. Runtime + compile-time cannot drift.
 [!] Never define a type manually when a Zod schema already exists.
 
 ### `AI_POLICY.md` as Separate File
+
 AI tools look for specific policy files. Standalone `AI_POLICY.md` is machine-readable. Different purpose from human-oriented documentation.
 
 ### Official GitHub Pages Actions over `peaceiris`
+
 `peaceiris` = third-party, single maintainer, supply chain risk, not maintained for Node 24, required `contents:write` (too broad). Official actions use scoped `pages:write` + `id-token:write`. `gh-pages` branch pattern eliminated.
 [!] Do not reintroduce `peaceiris` or any third-party deploy action for GitHub Pages.
 
 ### Exact Versions + Dependabot
+
 Loose versions (`^`, `~`) → silent malicious installs on compromised publish (Axios attack pattern, March 2026). Exact versions prevent surprise installs. Dependabot bridges gap with CI-gated reviewed PRs.
 [!] Never reintroduce `^` or `~`. All version updates via Dependabot PRs with CI validation.
 
 ### Dependabot Security Updates UI Disabled
+
 `dependabot.yml` already controls all PRs. UI toggle creates duplicate, uncontrolled parallel stream.
 [?] If `dependabot.yml` ever removed → re-evaluate toggle.
 
 ### CodeQL Scans Both `javascript-typescript` + `actions`
+
 `actions` scanner (GA April 2025) detects workflow misconfigs, secret exposure, injection. Workflow security as important as app security.
 [!] Both matrix entries must be kept.
 
 ### Explicit Top-Level Permissions on All Workflows
+
 Without explicit permissions → GitHub Actions defaults to wide permissions including `contents:write`. CodeQL flagged as CWE-275 (ci.yml, deploy-backend.yml, deploy-frontend.yml).
 Rule: workflow level = safe minimum. Job level overrides upward only when genuinely needed.
 [!] Every new workflow must declare explicit permissions from first commit.
 
 ### `.npmrc` `save-exact=true`
+
 `npm install` adds `^` by default — silently violates exact versions policy. `.npmrc` makes exact pinning automatic.
 [!] `.npmrc` must never be removed or overridden.
 Rule: `npm install` → adding new packages. `npm ci` → verifying clean build before commit.
 
 ### `@types/node` Must Match Runtime Major
+
 `@types/node` version major must match Node.js runtime major. Higher major introduces API types that don't exist at runtime → silent correctness issues. Pinned to latest patch of intended major.
 [!] Never pin `@types/node` to `.0.0` release — use latest stable patch.
 [!] When upgrading Node runtime → update ALL `@types/node` pins in same branch + Dependabot ignore list.
 Currently: Node 24 LTS → `@types/node` pinned to `24.x` latest stable patch.
 
 ### CodeQL Not a Merge Gate
+
 CodeQL findings require human review — not binary pass/fail. Adding as hard gate adds 8-10 min to every PR for informational output. Revisit when API handles real traffic or sensitive data.
 
 ### `npm ci` in CI + Locally After Dep Changes
+
 `npm install` reuses `node_modules` — masks incompatibilities only surfacing on clean install. `npm ci` deletes `node_modules`, installs from `package-lock.json` exactly, replicates CI.
 Rule: `npm install` → adding packages. `npm ci` → verifying build before committing.
 
 ### Helmet Middleware Order Non-Negotiable
+
 Security headers must be present on every response including CORS rejections + rate limit responses. Any middleware before Helmet can send response without security headers.
 [!] Never move Helmet below cors() or any other middleware.
 [!] Middleware order: `helmet → pino-http → cors → limiter → requireApiKey → routes`
 
 ### Root `package-lock.json` Triggers Both Deploy Pipelines
+
 Root `package-lock.json` = single source of truth for all dep versions. Shared dep Δ → both apps must redeploy. Occasional unnecessary deploy acceptable — safety > efficiency.
 
 ### NODE_ENV Must Never Be Set in Render Dashboard
+
 `NODE_ENV=production` in Render dashboard → `npm ci` skips devDependencies → TypeScript + `@types/node` missing → build failure. `NODE_ENV` managed exclusively via dotenvx at runtime.
 Correct build: `npm ci && npm run build && npm prune --omit=dev`
 [!] Never set `NODE_ENV` in Render dashboard. Never use `--include=dev` as permanent fix.
 
 ### SHA Pinning for GitHub Actions
+
 Version tags (`@v6`) are mutable. Compromised maintainer → tag silently retargeted to malicious code. Pinned SHA = immutable — reviewed code = executed code. (tj-actions/changed-files attack, March 2025)
 Dependabot manages SHA update PRs automatically for `github-actions` ecosystem.
 [!] Every new `uses:` reference must be SHA-pinned from first commit. Never merge tag references.
 
 ### Node.js Upgraded to 24 LTS
+
 Node 24 LTS latest takes precedence. All layers must declare same Node major — Dev Container, CI, `@types/node` pins. Never let these drift.
 [!] When Node major changes → update all references in same branch.
 
 ### API Key Auth Uses Static Shared Secret, Not JWT
+
 No human users. JWT = user session auth. Static shared secret = correct pattern for M2M auth between single trusted client and single trusted server.
 Browser caveat: `VITE_API_KEY` visible in compiled JS bundle. Accepted for demo scope. Proxy pattern is correct long-term fix — deferred to hardening sprint.
 [!] Never use JWT for M2M auth where no user identity exists.
 [!] `API_KEY` must be secret env var in Render dashboard. Never commit real key.
 
 ### Semgrep Deferred — CodeQL Overlap
+
 CodeQL (`javascript-typescript` + `actions`) already covers core SAST surface for this TypeScript monorepo (§7.9). Semgrep adds tooling overhead without meaningful coverage gap at current project stage.
 Revisit when real traffic or sensitive data exists.
 
 ### Node Version Pinned via `.nvmrc` + `engines`
+
 Node version belongs in repo — versioned, reviewed, CI-enforced, Render-respected.
 `.nvmrc` → consumed by Render, nvm, Dev Container. `engines.node` → enforced by `npm ci` + tooling.
 [!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
@@ -693,6 +774,7 @@ Node version belongs in repo — versioned, reviewed, CI-enforced, Render-respec
 [!] Node major upgrade → update `.nvmrc` + all `engines` pins + CI `node-version` + `@types/node` in same branch.
 
 ### `engines.node` Uses Range, Not Exact Patch
+
 `engines` is a runtime compatibility declaration, not a dep version. Node runtime patch and `@types/node` patch release on independent schedules — exact patch pinning causes permanent `EBADENGINE` drift.
 Correct: `">=24.0.0 <25.0.0"` — enforces Node 24, Dependabot manages `@types/node` patch independently.
 [!] `§4.3` exact versions policy applies to npm packages only — not runtime declarations.
@@ -700,38 +782,42 @@ Correct: `">=24.0.0 <25.0.0"` — enforces Node 24, Dependabot manages `@types/n
 [!] Never set `NODE_VERSION` in Render dashboard — repo is source of truth.
 
 ### TruffleHog: PR diff only, not full history
+
 Full history scans are slow and better suited as a one-time audit.
 CI gate scans the diff between base and head on every PR.
 --only-verified reduces false positives to confirmed live secrets only.
 
 ### TruffleHog: separate workflow, not added to ci.yml
+
 Secret scanning has independent permissions, trigger, and failure behavior.
 Isolation keeps ci.yml focused on build/test concerns.
 
 ### TruffleHog: two pins required
+
 uses: SHA pins the action code (action.yml shell script).
 version: 3.95.3 in with: pins the Docker image pulled at runtime.
 SHA pin alone does not pin the Docker image — both are required.
 
 ### Artifact Attestations / Provenance / Build Signing
+
 Deferred until release-chain need exists. Keep as future hardening item, not current scope.
 
 ---
 
 ## 11. Intentionally Deferred
 
-| Feature | Why Deferred |
-|---|---|
-| Advanced production hardening | Needed after real features built |
-| Scaling infrastructure | Premature at current project size |
-| HTTPS in local dev | Adds complexity before solving real problem |
-| Rootless Docker | Advanced system config, not needed now |
-| Private npm registry | Enterprise-level, not required at current size |
-| HashiCorp Vault | Overkill until multi-env production deployments exist |
+| Feature                             | Why Deferred                                                                                              |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Advanced production hardening       | Needed after real features built                                                                          |
+| Scaling infrastructure              | Premature at current project size                                                                         |
+| HTTPS in local dev                  | Adds complexity before solving real problem                                                               |
+| Rootless Docker                     | Advanced system config, not needed now                                                                    |
+| Private npm registry                | Enterprise-level, not required at current size                                                            |
+| HashiCorp Vault                     | Overkill until multi-env production deployments exist                                                     |
 | Docker multi-stage production build | `npm ci && npm run build && npm prune --omit=dev` achieves same runtime result. Revisit hardening sprint. |
-| SBOM, Trivy, OWASP ZAP | Needed when real traffic/sensitive data exists |
-| Nx / Turborepo | When build times justify |
-| Advanced frontend (React) | When UI complexity justifies |
+| SBOM, Trivy, OWASP ZAP              | Needed when real traffic/sensitive data exists                                                            |
+| Nx / Turborepo                      | When build times justify                                                                                  |
+| Advanced frontend (React)           | When UI complexity justifies                                                                              |
 
 > Deferred ≠ forgotten. Complexity before necessity → engineering decay.
 
@@ -739,7 +825,8 @@ Deferred until release-chain need exists. Keep as future hardening item, not cur
 
 ## 12. Next Project
 
-Use this `FOUNDATION.md` as Phase 0 input (written before any code).
+Use this `FOUNDATION.md` as a reference architecture baseline.
+Update documentation after implementation topics are completed and validated.
 Follow Phase 0 → 9 sequence precisely.
 Fix all known gaps by design, not patch.
 Include GitHub Actions IAM + SHA pinning from first commit.
@@ -747,4 +834,4 @@ Domain-agnostic — reusable template.
 
 ---
 
-*Last updated: May 2026*
+_Last updated: May 2026_

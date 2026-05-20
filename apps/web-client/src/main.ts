@@ -16,7 +16,7 @@ const API_URL = rawUrl.replace(/\/$/, "");
 console.log("API URL:", API_URL);
 
 async function loadTrades() {
-  const app = document.querySelector<HTMLDivElement>('#app');
+  const app = document.querySelector<HTMLDivElement>("#app");
 
   if (!app) {
     console.error("App root not found");
@@ -25,7 +25,7 @@ async function loadTrades() {
 
   try {
     const res = await fetch(`${API_URL}/trades`, {
-      headers: { 'x-api-key': apiKey },
+      headers: { "x-api-key": apiKey },
     });
 
     if (!res.ok) {

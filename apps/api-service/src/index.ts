@@ -10,7 +10,7 @@ import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { Trade } from "shared-types";
 import { env } from "config";
-import { requireApiKey } from './middleware/auth';
+import { requireApiKey } from "./middleware/auth";
 
 const logger = pino({
   level: env.NODE_ENV === "production" ? "info" : "debug",

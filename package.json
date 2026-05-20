@@ -6,9 +6,9 @@
     "packages/*"
   ],
   "version": "1.0.0",
-"engines": {
-  "node": ">=24.0.0 <25.0.0"
-},
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -26,10 +26,16 @@
     "preview:web": "npm run preview -w web-client",
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
     "reset": "npm run clean && npm install && npm run build",
-    "health": "node -e \"console.log('System OK')\""
+    "health": "node -e \"console.log('System OK')\"",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check"
   },
   "lint-staged": {
-    "**/*.ts": "eslint"
+    "**/*.ts": [
+      "prettier --write",
+      "eslint"
+    ],
+    "**/*.{js,json,md,yml,yaml}": "prettier --write"
   },
   "keywords": [],
   "author": "",
@@ -43,10 +49,11 @@
     "eslint": "10.3.0",
     "husky": "9.1.7",
     "lint-staged": "16.4.0",
+    "prettier": "3.8.3",
     "rimraf": "6.1.3",
     "typescript-eslint": "8.59.3"
   },
   "overrides": {
-  "ip-address": "10.1.1"
-}
+    "ip-address": "10.1.1"
+  }
 }

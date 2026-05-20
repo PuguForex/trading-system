@@ -3,23 +3,23 @@
 A full-stack TypeScript monorepo demonstrating production-grade DevSecOps engineering — secure Dev Container, automated CI/CD, and AI-safe development practices.
 
 > The trading domain is the vehicle. The real project is the engineering foundation.
-> See [`FOUNDATION.md`](./FOUNDATION.md) for the full architectural specification.
+> See [`FOUNDATION.md`](./FOUNDATION.md) for finalized architecture and engineering decisions.
 
 ---
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Language | TypeScript 6 (strict) |
-| Backend | Express 5, Node 24 |
-| Frontend | Vite 8 |
-| Validation | Zod 4 |
-| Testing | Vitest |
-| Dev Environment | WSL2 → Ubuntu → Docker Dev Container |
-| CI/CD | GitHub Actions |
-| Backend hosting | Render |
-| Frontend hosting | GitHub Pages |
+| Layer            | Technology                           |
+| ---------------- | ------------------------------------ |
+| Language         | TypeScript 6 (strict)                |
+| Backend          | Express 5, Node 24                   |
+| Frontend         | Vite 8                               |
+| Validation       | Zod 4                                |
+| Testing          | Vitest                               |
+| Dev Environment  | WSL2 → Ubuntu → Docker Dev Container |
+| CI/CD            | GitHub Actions                       |
+| Backend hosting  | Render                               |
+| Frontend hosting | GitHub Pages                         |
 
 ---
 
@@ -86,6 +86,7 @@ touch .env.secrets
 ```
 
 Add sensitive values to `.env.secrets`:
+
 ```env
 API_KEY=your-actual-api-key
 ```
@@ -155,18 +156,18 @@ Pre-commit hook runs automatically on `git commit` — ESLint is enforced before
 
 ## Project Structure
 
-```
+```text
 trading-system/
 ├── apps/
 │   ├── api-service       → Express REST API
-│   ├── trading-client    → Node.js CLI
+│   ├── cli-client        → Node.js CLI
 │   └── web-client        → Vite browser frontend
 ├── packages/
 │   ├── config            → Shared env + secrets management
 │   └── shared-types      → Shared TypeScript types + Zod schemas
 ├── .devcontainer/        → Dev Container definition
 ├── .github/workflows/    → CI/CD pipelines
-├── FOUNDATION.md         → Engineering specification (source of truth)
+├── FOUNDATION.md         → Finalized architecture and engineering decisions
 ├── AI_POLICY.md          → AI tool usage policy
 └── README.md             → This file
 ```
@@ -175,22 +176,25 @@ trading-system/
 
 ## Deployments
 
-| App | Platform | URL | Trigger |
-|---|---|---|---|
-| `api-service` | Render | https://trading-api-6ovi.onrender.com | Push to `main` |
-| `web-client` | GitHub Pages | https://puguforex.github.io/trading-system/ | Push to `main` (path-filtered) |
+| App           | Platform     | URL                                         | Trigger                                               |
+| ------------- | ------------ | ------------------------------------------- | ----------------------------------------------------- |
+| `api-service` | Render       | https://trading-api-6ovi.onrender.com       | GitHub Actions-triggered deployment on push to `main` |
+| `web-client`  | GitHub Pages | https://puguforex.github.io/trading-system/ | Push to `main` (path-filtered)                        |
 
 ### Environment Variables for Deployment
 
 **Render (api-service):**
 Set in the Render dashboard under Environment:
+
 ```
 PORT, API_URL, ALLOWED_ORIGINS, ALLOWED_OUTBOUND_HOSTS
 ```
+
 Secrets (`API_KEY`) set as secret environment variables in Render — never in the repo.
 
 **GitHub Pages (web-client):**
 Set in GitHub → Settings → Variables:
+
 ```
 VITE_API_URL = https://trading-api-6ovi.onrender.com
 ```
@@ -201,9 +205,15 @@ VITE_API_URL = https://trading-api-6ovi.onrender.com
 
 Every push to `main` and every pull request runs:
 
+```text
+lint → dependency audit → CodeQL analysis → build → test
 ```
-lint → security audit → build → test
-```
+
+Additional security workflows:
+
+- TruffleHog secret scanning
+- Dependency Review action
+- Path-filtered deployment workflows
 
 The pipeline must be green before any merge. There are no exceptions.
 
@@ -222,9 +232,9 @@ This project has an explicit AI usage policy. Before using any AI tool (Copilot,
 ## Architecture and Engineering Decisions
 
 See [`FOUNDATION.md`](./FOUNDATION.md) for:
+
 - Full security model and layer-by-layer explanation
 - Why every major decision was made
 - Professional build sequence
 - DevSecOps roadmap
 - What is intentionally deferred and why
-
