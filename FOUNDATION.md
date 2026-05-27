@@ -894,6 +894,13 @@ Reason: avoid local/CI/runtime drift during early polyglot adoption.
 `apps/trading-client` test script changed from `vitest` to `vitest run`.
 Reason: interactive watch-mode behavior prevents deterministic root test execution and CI completion.
 
+### Python Version Pinned via `.python-version`
+
+Python version belongs in repo when Python tooling is part of the build or deploy path. `.python-version` makes the interpreter version explicit, reviewable, and consistent across local development, `uv`, and hosted environments that detect repo-pinned Python versions.
+
+[!] Never rely on an unspecified system Python when the service uses `uv` or Python-based deployment.
+[!] Python major/minor upgrades must be updated in `.python-version` in the same branch as any related dependency or deploy changes.
+
 ---
 
 ## 11. Intentionally Deferred

@@ -10,77 +10,53 @@ Exists so work can resume safely after interruption.
 
 ## Current Focus
 
-Polyglot monorepo expansion with controlled Turborepo adoption and an internal Python service.
+Documentation alignment for completed session work:
+
+- `.python-version` added
+- npm audit issue fixed
+- Dependabot PR handled
 
 ---
 
 ## Completed This Session
 
-- Added Turborepo at root as task orchestrator.
-- Migrated root build/test/dev entrypoints to Turbo where currently safe.
-- Added `packageManager` field required by Turbo.
-- Added `apps/python-service` as an app-local Python service using `uv`.
-- Added FastAPI-based dummy internal service with `/health` endpoint.
-- Generated and committed `apps/python-service/uv.lock`.
-- Extended devcontainer with Python 3.13 support and pinned `uv` installation.
-- Extended CI to set up Python 3.13, install `uv`, and run `uv sync`.
-- Added Dependabot support for the Python `uv` project.
-- Added Render deploy workflow for Python service using dedicated deploy hook secret.
-- Updated ignore files for Turbo and Python cache/venv artifacts.
-- Changed `apps/trading-client` test command from `vitest` to `vitest run` so root Turbo tests and CI terminate cleanly.
-- Validated `npm run lint`, `npm run build`, and `npm run test` successfully after fixes.
+- Added `.python-version` to pin Python version at repo level.
+- Fixed npm audit issue.
+- Reviewed and handled Dependabot PR.
+- Determined doc impact: `SESSION.md` requires full update; `FOUNDATION.md` requires Python version decision log; `README.md` requires no change.
 
 ---
 
 ## In Progress
 
-- Documentation alignment in `FOUNDATION.md` and `README.md`.
-- Decision-log capture for phased polyglot adoption.
-- Final implementation review before commit and PR.
+- Documentation updates only:
+  - `SESSION.md`
+  - `FOUNDATION.md`
 
 ---
 
 ## Blockers
 
-- None.
+- None
 
 ---
 
 ## Decisions Made
 
-- Turborepo is adopted as root task orchestrator only.
-- npm remains the authoritative package manager for Node workspaces.
-- Python dependency management is app-local through `uv`, not a root Python workspace.
-- Root Python workspace is deferred until multiple Python apps/packages justify it.
-- Python service is intentionally internal/private on Render.
-- CI uses explicit Python setup plus pinned `astral-sh/setup-uv`.
-- Turbo adoption is intentionally partial because workspace script coverage is not yet uniform.
-- Root lint remains direct ESLint for now rather than Turbo-distributed lint.
-- Root test is filtered to `trading-client` because other workspaces do not yet have valid test contracts.
-- Documentation must capture the full reasoning trail from the start of this task, especially the decision logs.
+- `SESSION.md` records the full session continuity update.
+- `FOUNDATION.md` receives a decision-log entry for `.python-version`.
+- `README.md` remains unchanged because no user-facing setup or run workflow changed.
+- npm audit fix is treated as session history, not a new permanent architecture decision.
 
 ---
 
 ## Files Touched
 
-- `.devcontainer/devcontainer.json`
-- `.github/workflows/ci.yml`
-- `.github/workflows/deploy-python-service.yml`
-- `.github/dependabot.yml`
-- `.gitignore`
-- `.aiignore`
-- `.cursorignore`
-- `package.json`
-- `package-lock.json`
-- `turbo.json`
-- `apps/python-service/pyproject.toml`
-- `apps/python-service/main.py`
-- `apps/python-service/README.md`
-- `apps/python-service/uv.lock`
-- `apps/trading-client/package.json`
-- `SESSION.md`
-- `FOUNDATION.md` pending update
-- `README.md` pending update
+- `SESSION.md` — session continuity updated.
+- `FOUNDATION.md` — Python version pinning decision added.
+- `.python-version` — repo-level Python version pin added.
+- Files related to npm audit remediation.
+- Files related to the handled Dependabot PR.
 
 ---
 
@@ -130,6 +106,7 @@ package-lock.json
 turbo.json
 .npmrc
 .nvmrc
+.python-version
 eslint.config.mjs
 .gitignore
 .gitattributes
@@ -218,26 +195,17 @@ context.txt
 
 ## Next Actions
 
-1. Update `FOUNDATION.md` with architecture and decision-log entries for polyglot adoption.
-2. Update `README.md` with current dev/build/test commands and Python service notes.
-3. Review full diff including lockfiles.
-4. Commit implementation and documentation together.
-5. Push branch and open PR.
+1. Update `SESSION.md`.
+2. Add Python version decision log to `FOUNDATION.md`.
+3. Review diffs for formatting consistency.
+4. Commit on feature branch and push.
+5. Open or update PR.
 
 ---
 
 ## Resume Notes
 
-- Current root commands:
-  - `npm run build`
-  - `npm run test`
-  - `npm run lint`
-  - `npm run dev:web`
-  - `npm run dev:api`
-  - `npm run dev:python`
-- `npm run dev` currently targets Turbo-managed web dev only; it is not yet a full monorepo dev launcher.
-- `apps/python-service` uses Python 3.13 and `uv`.
-- CI now requires Python setup plus `uv sync` for `apps/python-service`.
-- Render Python deployment expects secret: `RENDER_PYTHON_SERVICE_DEPLOY_HOOK_URL`.
-- Important rationale to preserve in docs: this is a phased migration, not full polyglot standardization.
-- Decision logs must include not only final decisions but also the migration findings discovered during implementation.
+- `.python-version` was added and should be treated as the Python runtime source-of-truth in repo.
+- npm audit issue was fixed during this session.
+- Dependabot PR was handled in this session.
+- `README.md` intentionally left unchanged.
