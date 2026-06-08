@@ -25,3 +25,4 @@ apps/python-service/.venv
 .pytest_cache
 .ruff_cache
 .mypy_cache
+.venv
