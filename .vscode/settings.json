@@ -1,3 +1,4 @@
 {
-  "js/ts.tsdk.path": "node_modules/typescript/lib"
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "python.defaultInterpreterPath": "/workspaces/trading-system/apps/python-service/.venv/bin/python"
 }
