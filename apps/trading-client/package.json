@@ -16,7 +16,7 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@types/node": "24.12.4",
+    "@types/node": "24.13.1",
     "typescript": "6.0.3",
     "vitest": "4.1.8"
   },
